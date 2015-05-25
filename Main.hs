@@ -11,4 +11,4 @@ main =
        parse <- parseCSV <$> getContents
        case parse of 
            Left e -> putStrLn $ show e
-           Right e -> putStrLn $ show e
+           Right e -> putStrLn $ show $ solve e

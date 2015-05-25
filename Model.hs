@@ -7,18 +7,17 @@ import Text.ParserCombinators.Parsec
 import Data.Maybe
 
 newtype Prof = Prof { _name :: String }
-    deriving Show 
+    deriving (Ord, Eq, Show)
 data Hor = Hor { _codhor :: Integer , _descr :: Maybe String }
-    deriving Show 
+    deriving (Ord, Eq, Show)
 newtype Fase = Fase { _codfase :: Integer }
-    deriving Show 
+    deriving (Ord, Eq, Show)
 
 newtype Restr = Restr (Hor, Hor)
     deriving Show
 
 data Carga = Carga { _fases ::[(Fase, [Prof])], _hor :: [Hor],  _restr ::[Restr] }
     deriving Show 
-
 
 
 emptyCarga = Carga [] [] []
