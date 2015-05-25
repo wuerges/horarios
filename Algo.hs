@@ -73,6 +73,8 @@ solve c = traceShow (s) $ Quadro []
     where ce = cargaEdges c
           sm = simpleMatching ce
           s = showMatching sm
+          a = genProfFase c
+          b = genHorFase c
 
           
 
