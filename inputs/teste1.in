@@ -1,0 +1,29 @@
+hor 1 "Segunda 7:30"
+hor 2 "Terca 7:30"
+hor 3 "Quarta 7:30"
+hor 4 "Quinta 7:30"
+hor 5 "Sexta 7:30"
+hor 6 "Segunda 10:00"
+hor 7 "Terca 10:00"
+hor 8 "Quarta 10:00"
+hor 9 "Quinta 10:00"
+hor 10 "Sexta 10:00"
+hor 11 "Segunda 19:00"
+hor 12 "Terca 19:00"
+hor 13 "Quarta 19:00"
+hor 14 "Quinta 19:00"
+hor 15 "Sexta 19:00"
+hor 16 "Segunda 21:00"
+hor 17 "Terca 21:00"
+hor 18 "Quarta 21:00"
+hor 19 "Quinta 21:00"
+hor 20 "Sexta 21:00"
+prof 1 "Fernando"
+prof 1 "Fernando"
+prof 1 "Emilio"
+prof 1 "Emilio" "Fernando"
+restr 16 2
+restr 17 3
+restr 18 4
+restr 19 5
+color 1 6 
