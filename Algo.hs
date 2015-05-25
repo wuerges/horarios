@@ -69,12 +69,13 @@ showMatching (_, _, es) = show $ S.toList es
 
 
 solve :: Carga -> Quadro
-solve c = traceShow (s) $ Quadro []
+solve c = trace pp $ Quadro []
     where ce = cargaEdges c
           sm = simpleMatching ce
           s = showMatching sm
-          a = genProfFase c
-          b = genHorFase c
+          as = [(n, p) | (n, (f, p)) <- genProfFase c]
+          bs = [(n, h, f) | (n, (h, f)) <- (genHorFase c)]
+          pp = show s ++ "\n" ++ show as ++ "\n" ++ show bs
 
           
 
