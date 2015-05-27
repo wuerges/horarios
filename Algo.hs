@@ -12,18 +12,21 @@ import qualified Data.Set as S
 uniq :: Ord a => [a] -> [a]
 uniq = S.toList . S.fromList
 
-type NL1 = (Fase, [Prof])
-type NL2 = (Fase, Hor)
+type NL1 = (Hor, Prof)
+type NL2 = (Fase, Hor, [Prof])
 
-genHorFase :: Carga -> [LNode NL2]
-genHorFase c =  zip [1..] (do
-    a <- uniq (map fst $ c ^. fases)
-    b <- uniq (c ^. hor)
+genPart1 :: Carga -> [LNode NL1]
+genPart1 c = zip [1..] (do 
+    a <- uniq (c ^. hor)
+    b <- uniq (concat $ map snd $ c ^. fases)
     return (a, b))
 
 
-genProfFase :: Carga -> [LNode NL1]
-genProfFase c = zip [1..] (c ^. fases)
+genPart2 :: Carga -> [LNode NL2]
+genPart2 c =  zip [1..] (do
+    a <- uniq (map fst $ c ^. fases)
+    b <- uniq (c ^. hor)
+    return (a, b))
 
 
 cargaEdge :: LNode NL1 -> LNode NL2 -> Maybe Edge
@@ -40,8 +43,8 @@ partEdges p1 p2 = catMaybes (do
 
 cargaEdges :: Carga -> [Edge]
 cargaEdges c = catMaybes (do
-                    a <- genProfFase c
-                    b <- genHorFase c
+                    a <- genPart1 c
+                    b <- genPart2 c
                     return $ cargaEdge a b)
                                     
 data NL = P1 NL1
