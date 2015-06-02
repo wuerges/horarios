@@ -21,10 +21,10 @@ type FaseMap = H.Map Integer (Turno, [Prof])
 newtype Restr = Restr (Hor, Hor)
     deriving Show
 
-data Carga = Carga { _restr ::[Restr], _fases :: FaseMap }
+data Carga = Carga { _restr ::[Restr], _fases :: H.Map Integer Turno, _profs :: [(Prof, Integer)] }
     deriving Show 
 
-emptyCarga = Carga [] H.empty
+emptyCarga = Carga [] H.empty []
 
 data Quadro = Quadro [(Hor, Integer, Prof)]
     deriving Show 
@@ -39,21 +39,21 @@ dias = [1..5]
 horsTurno Diurno  = [Hor d h | d <- dias, h <- [7, 10]]
 horsTurno Noturno = [Hor d h | d <- dias, h <- [19, 21]]
 
-horariosFases fm = concat [[(c, h) | h <- horsTurno t] | (c, (t, _)) <- H.toList fm]
+horariosFases fm = concat [[(c, h) | h <- horsTurno t] | (c, t) <- H.toList fm]
 
 manhaSeguinte (Hor d1 h1) (Hor d2 h2) = d2 == d1 + 1 && h1 == 21 && h2 == 7
 
 consecutivos (Hor d1 h1) (Hor d2 h2) = d1 == d2 && ((h1 == 7 && h2 == 10) || (h1 == 19 && h2 == 21))
 
 addProf :: Integer -> Prof -> Carga -> Carga
-addProf f p c = fases %~ H.update (\(t, ps) -> Just (t, (p:ps))) f  $ c
+addProf f p c = profs %~ ((p, f):) $ c
 
 addTurno :: Integer -> Turno -> Carga -> Carga
-addTurno f t c = fases %~ H.update (\(_, ps) -> Just (t, ps)) f  $ c
+addTurno f t c = fases %~ H.insert f t $ c
 
 
-getProfs :: Integer -> Carga -> [Prof]
-getProfs f c = snd $ fromMaybe (Diurno,[]) $ H.lookup f (c ^. fases)
+--getProfs :: Integer -> Carga -> [Prof]
+--getProfs f c = fromMaybe [] $ H.lookup f (c ^. profs)
 
 --instance Monoid Carga where  
 --    mempty = emptyCarga

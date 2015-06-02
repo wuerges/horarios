@@ -10,7 +10,7 @@ import Debug.Trace
 csvFile :: GenParser Char st Carga
 csvFile = 
     do results <-  many line
-       traceShow results eof
+       eof
        return $ foldl addResult emptyCarga results
 
 data ResLine = P (Integer, Prof) | T (Integer, Turno)
