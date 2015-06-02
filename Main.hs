@@ -1,5 +1,6 @@
 
 import Model
+import View
 import Parser
 import Algo
 import System.Environment
@@ -10,5 +11,7 @@ main =
     do 
        parse <- parseCSV <$> getContents
        case parse of 
-           Left e -> putStrLn $ "error " ++ show e
-           Right e -> putStrLn $ "success " ++ show e ++  show (solve e)
+           Left e -> putStrLn $ "Parse error: \n" ++ show e
+           Right r -> case solve r of
+                Left e -> putStr $ "Allocation Error: \n" ++ prettyPrintErr e
+                Right s -> putStr $ prettyPrint s

@@ -4,9 +4,6 @@ import Model
 import Control.Lens ((.~), (%~))
 import Text.ParserCombinators.Parsec
 
-import Debug.Trace
-
-
 csvFile :: GenParser Char st Carga
 csvFile = 
     do results <-  many line

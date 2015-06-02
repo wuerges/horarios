@@ -5,7 +5,6 @@ import Model
 import Control.Lens
 import Data.Maybe
 import Data.Either
-import Debug.Trace
 import qualified Data.Map as H
 
 import qualified Data.Set as S
@@ -35,11 +34,11 @@ color1ns :: PM -> G -> Prof -> [Int] -> Maybe PM
 color1ns pm g c = 
     listToMaybe . catMaybes . map (color1n pm g c)
 
-color :: PM -> G -> TODO -> Either (PM, Prof) PM
+color :: PM -> G -> TODO -> Either (TODO, PM) PM
 color pm g [] = Right pm
-color pm g ((c, ns):cs) = case color1ns pm g c ns of 
+color pm g todo@((c, ns):cs) = case color1ns pm g c ns of 
     Just pm' -> color pm' g cs
-    Nothing -> Left (pm, c)
+    Nothing -> Left (todo, pm)
     
 genNodes :: Carga -> [LNode (Integer, Hor)]
 genNodes c = zip [1..] (horariosFases $ c ^. fases)
@@ -60,16 +59,16 @@ makeQuadro pm g = Quadro [(h n g, f n g, p) | (n, p) <- H.toList pm]
           f n g = fst $ fromJust $ lab g n :: Integer
 
 
-solve :: Carga -> Quadro
-solve c = trace ("\n\n\n" ++ show q ++ "\n\n\n" ++ show td ++ "\n\n\n") $ q
+solve :: Carga -> Either ([Prof], Quadro) Quadro
+solve c = q
     where ns = genNodes c
           es = filter filterEdge (allEdges ns)
           es' = map (\((n1, _), (n2, _)) -> (n1, n2, ())) es
           g = mkGraph ns es' :: G
           td = genTodo c ns
           q = case color H.empty g td of
-            Left pm1 -> Quadro []
-            Right pm' -> makeQuadro pm' g
+            Left (td, pm') -> Left (map fst td, makeQuadro pm' g)
+            Right pm' -> Right $ makeQuadro pm' g
     --where ce = cargaEdges c
      --     sm = simpleMatching ce
       --    s = showMatching sm
