@@ -4,17 +4,28 @@ import Model
 import Control.Lens ((.~), (%~))
 import Text.ParserCombinators.Parsec
 
+import Debug.Trace
+
 
 csvFile :: GenParser Char st Carga
 csvFile = 
-    do result <- many line
-       eof
-       return $ mconcat result
+    do results <-  many line
+       traceShow results eof
+       return $ foldl addResult emptyCarga results
+
+data ResLine = P (Integer, Prof) | T (Integer, Turno)
+    deriving Show
+
+addResult :: Carga -> ResLine -> Carga
+addResult c (P (i, p)) = addProf i p c 
+addResult c (T (i, t)) = addTurno i t c
 
 -- Each line contains 1 or more cells, separated by a comma
-line :: GenParser Char st Carga
+line :: GenParser Char st ResLine
 line = 
-    do c <- ( prof <|> parseHor <|> precolor <|> parseRestr )
+    do 
+       --c <- ( prof <|> parseHor <|> precolor <|> parseRestr )
+       c <- ( prof <|> parseFase )
        eol                       -- end of line
        return c
        
@@ -39,15 +50,33 @@ identifier s = do
     many (oneOf " ")
     return r
 
-prof :: GenParser Char st Carga
+prof :: GenParser Char st ResLine
 prof = 
     do
        identifier "prof"
        n <- number
-       ss <- many quotedString 
-       return $ fases %~ ((Fase n, map Prof ss):) $  emptyCarga   
+       p <- quotedString
+       return $ P (n, Prof p)
 
-parseHor :: GenParser Char st Carga
+parseTurno :: GenParser Char st Turno
+parseTurno =
+    do 
+       s <- string "Diurno" <|> string "Noturno"
+       many (oneOf " ")
+       case s of
+           "Diurno" -> return Diurno
+           "Noturno" -> return Noturno
+
+parseFase :: GenParser Char st ResLine
+parseFase =
+    do 
+       identifier "fase"
+       n <- number
+       t <- parseTurno
+       return $ T (n, t)
+
+
+{-parseHor :: GenParser Char st Carga
 parseHor = do
     identifier "hor"
     n <- number 
@@ -67,6 +96,7 @@ parseRestr = do
     n1 <- number
     n2 <- number
     return $ restr %~ (Restr (Hor n1 Nothing, Hor n2 Nothing) :) $ emptyCarga
+-}
 
 
 -- The end of line character is \n

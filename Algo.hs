@@ -14,12 +14,7 @@ import qualified Data.Set as S
 uniq :: Ord a => [a] -> [a]
 uniq = S.toList . S.fromList
 
---cargaEdge :: LNode NL1 -> LNode NL2 -> Maybe Edge
---cargaEdge a@(n1, (f1, _)) b@(n2, (f2, h2))
---   | (f1 == f2) = Just (n1, n2)
---cargaEdge _ _ = Nothing
-
-type G = Gr (Fase, Hor) ()
+type G = Gr (Integer, Hor) ()
 
 type PM = H.Map Int Prof
 type TODO = [(Prof, [Int])]
@@ -39,8 +34,13 @@ color pm g ((c, ns):cs) = case color1ns pm g c ns of
     Just pm' -> color pm' g cs
     Nothing -> Left (pm, c)
     
-genNodes :: Carga -> [LNode (Fase, Hor)]
-genNodes c = zip [1..] (horariosFases $ map fst $ c ^. fases)
+genNodes :: Carga -> [LNode (Integer, Hor)]
+genNodes c = zip [1..] (horariosFases $ c ^. fases)
+
+genTodo1 c (n, (f, _)) = [(p, [n]) | p <- getProfs f c]
+
+genTodo :: Carga -> [LNode (Integer, Hor)] -> TODO
+genTodo c ns = H.toList $ H.fromListWith (++) (concat $ map (genTodo1 c) ns)
 
 allEdges ns = [(e1, e2) | e1 <- ns, e2 <- ns]
 filterEdge (a@(n1, (f1, h1)), b@(n2, (f2, h2))) = 
@@ -48,12 +48,12 @@ filterEdge (a@(n1, (f1, h1)), b@(n2, (f2, h2))) =
 
 
 solve :: Carga -> Quadro
-solve c = trace (show pm') $ Quadro []
+solve c = trace (show pm' ++ show ns ++ show es ++ show c) $ Quadro []
     where ns = genNodes c
           es = filter filterEdge (allEdges ns)
           es' = map (\((n1, _), (n2, _)) -> (n1, n2, ())) es
           g = mkGraph ns es' :: G
-          pm' = color H.empty g [] 
+          pm' = color H.empty g (genTodo c ns) 
     --where ce = cargaEdges c
      --     sm = simpleMatching ce
       --    s = showMatching sm
