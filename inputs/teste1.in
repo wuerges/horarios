@@ -21,7 +21,7 @@ hor 20 "Sexta 21:00"
 prof 1 "Fernando"
 prof 1 "Fernando"
 prof 1 "Emilio"
-prof 1 "Emilio" "Fernando"
+prof 1 "Emilio"
 restr 16 2
 restr 17 3
 restr 18 4

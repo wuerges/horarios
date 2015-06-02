@@ -14,64 +14,12 @@ import qualified Data.Set as S
 uniq :: Ord a => [a] -> [a]
 uniq = S.toList . S.fromList
 
-{-
-type NL1 = (Hor, Prof)
-type NL2 = (Fase, Hor, [Prof])
+--cargaEdge :: LNode NL1 -> LNode NL2 -> Maybe Edge
+--cargaEdge a@(n1, (f1, _)) b@(n2, (f2, h2))
+--   | (f1 == f2) = Just (n1, n2)
+--cargaEdge _ _ = Nothing
 
-genPart1 :: Carga -> [LNode NL1]
-genPart1 c = zip [1..] (do 
-    a <- uniq (c ^. hor)
-    b <- uniq (concat $ map snd $ c ^. fases)
-    return (a, b))
-
-
-genPart2 :: Carga -> [LNode NL2]
-genPart2 c =  zip [1..] (do
-    a <- uniq (map fst $ c ^. fases)
-    b <- uniq (c ^. hor)
-    return (a, b))
-
-cargaEdge :: LNode NL1 -> LNode NL2 -> Maybe Edge
-cargaEdge a@(n1, (f1, _)) b@(n2, (f2, h2))
-    | (f1 == f2) = Just (n1, n2)
-cargaEdge _ _ = Nothing
-
-
-partEdges :: [LNode NL1] -> [LNode NL2] -> [Edge]
-partEdges p1 p2 = catMaybes (do
-    a <- p1
-    b <- p2
-    return $ cargaEdge a b)
-
-cargaEdges :: Carga -> [Edge]
-cargaEdges c = catMaybes (do
-                    a <- genPart1 c
-                    b <- genPart2 c
-                    return $ cargaEdge a b)
-                                    
-data NL = P1 NL1
-        | P2 NL2
-        deriving Show
-
--}
-type G = Gr Hor ()
-
-{-
-type Matching = (S.Set Node, S.Set Node, S.Set Edge)
-
-directMatch :: Matching -> Edge -> Matching
-directMatch m@(pa, pb, es) (n1, n2) = case (S.member n1 pa, S.member n2 pb) of
-    (False, False) -> (S.insert n1 pa, S.insert n2 pb, S.insert (n1, n2) es)
-    _ -> m
-
-
-simpleMatching :: [Edge] -> Matching
-simpleMatching l = foldl directMatch (S.empty, S.empty, S.empty) l
-
-
-showMatching (_, _, es) = show $ S.toList es
--}
-
+type G = Gr (Fase, Hor) ()
 
 type PM = H.Map Int Prof
 type TODO = [(Prof, [Int])]
@@ -91,9 +39,21 @@ color pm g ((c, ns):cs) = case color1ns pm g c ns of
     Just pm' -> color pm' g cs
     Nothing -> Left (pm, c)
     
+genNodes :: Carga -> [LNode (Fase, Hor)]
+genNodes c = zip [1..] (horariosFases $ map fst $ c ^. fases)
+
+allEdges ns = [(e1, e2) | e1 <- ns, e2 <- ns]
+filterEdge (a@(n1, (f1, h1)), b@(n2, (f2, h2))) = 
+        (h1 == h2) || manhaSeguinte h1 h2 || (f1 == f2 && consecutivos h1 h2)
+
 
 solve :: Carga -> Quadro
-solve c = trace "" $ Quadro []
+solve c = trace (show pm') $ Quadro []
+    where ns = genNodes c
+          es = filter filterEdge (allEdges ns)
+          es' = map (\((n1, _), (n2, _)) -> (n1, n2, ())) es
+          g = mkGraph ns es' :: G
+          pm' = color H.empty g [] 
     --where ce = cargaEdges c
      --     sm = simpleMatching ce
       --    s = showMatching sm

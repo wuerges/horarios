@@ -8,26 +8,27 @@ import Data.Maybe
 
 newtype Prof = Prof { _name :: String }
     deriving (Ord, Eq, Show)
-data Hor = Hor { _codhor :: Integer , _descr :: Maybe String }
+
+data Hor = Hor { _dia :: Integer, _hora :: Integer }
     deriving (Ord, Eq, Show)
-newtype Fase = Fase { _codfase :: Integer }
+
+
+data Turno = Diurno | Noturno
+    deriving (Ord, Eq, Show)
+
+data Fase = Fase { _codfase :: Integer, _turno :: Turno }
     deriving (Ord, Eq, Show)
 
 newtype Restr = Restr (Hor, Hor)
     deriving Show
 
-data Carga = Carga { _fases ::[(Fase, [Prof])], _hor :: [Hor],  _restr ::[Restr] }
+data Carga = Carga { _restr ::[Restr], _fases :: [(Fase, [Prof])] }
     deriving Show 
 
-
-emptyCarga = Carga [] [] []
-
-
+emptyCarga = Carga [] []
 
 data Quadro = Quadro [(Hor, Fase, Prof)]
     deriving Show 
-
-
 
 $(makeLenses ''Prof)
 $(makeLenses ''Hor)
@@ -36,7 +37,18 @@ $(makeLenses ''Restr)
 $(makeLenses ''Carga)
 $(makeLenses ''Quadro)
 
+dias = [1..5]
+horsTurno Diurno  = [Hor d h | d <- dias, h <- [7, 10]]
+horsTurno Noturno = [Hor d h | d <- dias, h <- [19, 21]]
 
-instance Monoid Carga where  
-    mempty = emptyCarga
-    mappend (Carga fs1 hs1 rs1) (Carga fs2 hs2 rs2) = Carga (fs1 ++ fs2) (hs1 ++ hs2) (rs1 ++ rs2)
+horariosFase f = [(f, h) | h <- horsTurno $ f ^. turno]
+horariosFases = concat . map horariosFase
+
+manhaSeguinte (Hor d1 h1) (Hor d2 h2) = d2 == d1 + 1 && h1 == 21 && h2 == 7
+
+consecutivos (Hor d1 h1) (Hor d2 h2) = d1 == d2 && ((h1 == 7 && h2 == 10) || (h1 == 19 && h2 == 21))
+
+
+--instance Monoid Carga where  
+--    mempty = emptyCarga
+
