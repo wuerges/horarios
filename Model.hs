@@ -48,6 +48,10 @@ consecutivos (Hor d1 h1) (Hor d2 h2) = d1 == d2 && ((h1 == 7 && h2 == 10) || (h1
 addProf :: Integer -> Prof -> Carga -> Carga
 addProf f p c = profs %~ ((p, f):) $ c
 
+addProf2 :: Integer -> Prof -> Carga -> Carga
+addProf2 f p c = addProf f p $ addProf f p c
+
+
 addTurno :: Integer -> Turno -> Carga -> Carga
 addTurno f t c = fases %~ H.insert f t $ c
 

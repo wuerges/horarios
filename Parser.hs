@@ -14,7 +14,7 @@ data ResLine = P (Integer, Prof) | T (Integer, Turno)
     deriving Show
 
 addResult :: Carga -> ResLine -> Carga
-addResult c (P (i, p)) = addProf i p c 
+addResult c (P (i, p)) = addProf2 i p c 
 addResult c (T (i, t)) = addTurno i t c
 
 -- Each line contains 1 or more cells, separated by a comma
