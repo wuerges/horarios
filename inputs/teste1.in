@@ -1,6 +1,6 @@
 fase 1 Noturno
 fase 2 Diurno
-prof 1 "Fernando"
-prof 2 "Fernando"
-prof 1 "Emilio"
-prof 2 "Emilio"
+disc 1 "Fernando" "d1"
+disc 2 "Fernando" "d2"
+disc 1 "Emilio" "d3"
+disc 2 "Emilio" "d4"
