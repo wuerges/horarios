@@ -39,6 +39,13 @@ color pm g [] = Right pm
 color pm g todo@((c, ns):cs) = case color1ns pm g c ns of 
     Just pm' -> color pm' g cs
     Nothing -> Left (todo, pm)
+
+color' :: TODO -> PM -> G -> TODO -> Either (TODO, PM) PM
+color' errs pm g todo = case color pm g todo of 
+    Left (t:ts, pm) -> color' (t:errs) pm g ts
+    Right x -> case errs of 
+        [] -> Right x
+        errs -> Left (errs, x)
     
 genNodes :: Carga -> [LNode (Integer, Hor)]
 genNodes c = zip [1..] (horariosFases $ c ^. fases)
@@ -66,7 +73,7 @@ solve c = q
           es' = map (\((n1, _), (n2, _)) -> (n1, n2, ())) es
           g = mkGraph ns es' :: G
           td = genTodo c ns
-          q = case color H.empty g td of
+          q = case color' [] H.empty g td of
             Left (td, pm') -> Left (map fst td, makeQuadro pm' g)
             Right pm' -> Right $ makeQuadro pm' g
     --where ce = cargaEdges c
