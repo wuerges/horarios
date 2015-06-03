@@ -5,8 +5,8 @@ import Model
 import Control.Lens
 import Data.Maybe
 import Data.Either
+import Data.List
 import qualified Data.Map as H
-
 import qualified Data.Set as S
 
 
@@ -69,8 +69,24 @@ genNodes c = zip [1..] (horariosFases $ c ^. fases)
 
 genTodoProf ns (p, f1) = (p, [n | (n, (f2, _)) <- ns, f1 == f2])
 
+-- permutations $ map concat $ sequenceA $ map permutations [[1, 2], [4]]
+
+groupProfs :: [(Disc, Integer)] -> [[(Disc, Integer)]]
+groupProfs = groupBy (\a b -> snd a == snd b) . sortOn snd
+
+permuteGroups :: [[(Disc, Integer)]] -> [[(Disc, Integer)]]
+permuteGroups gs = map concat $ sequenceA $ map permutations $ gs
+
+genTodoProfs :: [LNode (Integer, Hor)] -> [(Disc, Integer)] -> TODO
+genTodoProfs ns ps = map (genTodoProf ns) ps
+
+genTodos' ns ps = map (genTodoProfs ns) (permuteGroups . groupProfs $  ps)
+
+genTodos :: Carga -> [LNode (Integer, Hor)] -> [TODO]
+genTodos c ns = genTodos' ns ( c ^. profs )
+
 genTodo :: Carga -> [LNode (Integer, Hor)] -> TODO
-genTodo c ns = map (genTodoProf ns) ( c ^. profs )
+genTodo c ns = genTodoProfs ns ( c ^. profs )
 
 allEdges ns = [(e1, e2) | e1 <- ns, e2 <- ns]
 filterEdge (a@(n1, (f1, h1)), b@(n2, (f2, h2))) = 
@@ -94,8 +110,12 @@ solve c = q
           es = filter filterEdge (allEdges ns)
           es' = map (\((n1, _), (n2, _)) -> (n1, n2, ())) es
           g = mkGraph ns es' :: G
-          td = genTodo c ns
+          tds = genTodos c ns
           pcm = precolorMap c ns 
-          q = case color' [] pcm g td of
+          genQ td = case color' [] pcm g td of
             Left (td, pm') -> Left (map fst td, makeQuadro pm' g)
             Right pm' -> Right $ makeQuadro pm' g
+          qs = map genQ (take 1000 tds)
+          q = case rights qs of
+                (r:_) -> Right r
+                [] -> Left $ minimumBy (\a b -> length (fst a) `compare` length (fst b)) (lefts qs)
