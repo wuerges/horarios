@@ -8,7 +8,7 @@ import Data.Maybe
 import qualified Data.Map as H
 
 data Disc = Disc { _prof :: String, _nome :: String }
-    deriving (Ord, Eq, Show)
+    deriving Show
 
 data Hor = Hor { _dia :: Integer, _hora :: Integer }
     deriving (Ord, Eq, Show)

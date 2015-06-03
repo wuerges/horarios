@@ -22,11 +22,11 @@ color1n :: PM -> G -> Disc -> Int -> Maybe PM
 color1n pm g c n = 
     if free 
     then 
-        if all (corOk c) (catMaybes $ map ((flip H.lookup) pm) $ neighbors g n) 
+        if any (corProib c) (catMaybes $ map ((flip H.lookup) pm) $ neighbors g n) 
         then Nothing
         else Just $ H.insert n c pm
     else Nothing
-  where corOk (Disc p1 d1) (Disc p2 d2) = (d1 == d2) || (p1 /= p2)
+  where corProib (Disc p1 d1) (Disc p2 d2) = (p1 == p2) && (p1 /= p2)
         free = case H.lookup n pm of 
                     Just _ -> False 
                     Nothing -> True
