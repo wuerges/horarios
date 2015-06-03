@@ -25,18 +25,27 @@ breakP p = case break (=='&') p of
 profProib :: String -> String -> Bool
 profProib p1s p2s = any (\(a, b) -> a == b) [(p1, p2) | p1 <- breakP p1s, p2 <- breakP p2s]
         
+neighs :: PM -> G -> Int -> [(Disc, Hor)]
+neighs pm g n = catMaybes $ map (l pm g) (neighbors g n)
+    where l pm g n = case H.lookup n pm of { Nothing -> Nothing ; Just x -> l' x pm g n }
+          l' x pm g n = case lab g n of { Nothing -> Nothing ; Just (f, h) -> Just (x, h) }
+
 color1n :: PM -> G -> Disc -> Int -> Maybe PM
 color1n pm g c n = 
     if free 
     then 
-        if any (corProib c) (catMaybes $ map ((flip H.lookup) pm) $ neighbors g n) 
+        if any (proib c) (neighs pm g n) 
         then Nothing
         else Just $ H.insert n c pm
     else Nothing
-  where corProib (Disc p1 d1) (Disc p2 d2) = profProib p1 p2 -- && (p1 == p2)
+  where proib (Disc p1 d1) (Disc p2 d2, h2) = 
+            if consecutivos h1 h2 || consecutivos h2 h1
+            then d1 == d2
+            else profProib p1 p2
         free = case H.lookup n pm of 
                     Just _ -> False 
                     Nothing -> True
+        h1 = snd $ fromJust $ lab g n
 
 color1ns :: PM -> G -> Disc -> [Int] -> Maybe PM
 color1ns pm g c = 
