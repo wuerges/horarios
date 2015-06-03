@@ -1,4 +1,4 @@
-# rhorarios
+# Alocador de Horários
 
 
 O programa vem com três casos de testes, na pasta inputs. 
