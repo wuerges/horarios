@@ -15,22 +15,23 @@ uniq = S.toList . S.fromList
 
 type G = Gr (Integer, Hor) ()
 
-type PM = H.Map Int Prof
-type TODO = [(Prof, [Int])]
+type PM = H.Map Int Disc
+type TODO = [(Disc, [Int])]
 
-color1n :: PM -> G -> Prof -> Int -> Maybe PM
+color1n :: PM -> G -> Disc -> Int -> Maybe PM
 color1n pm g c n = 
     if free 
     then 
-        if any (c==) (catMaybes $ map ((flip H.lookup) pm) $ neighbors g n) 
+        if all (corOk c) (catMaybes $ map ((flip H.lookup) pm) $ neighbors g n) 
         then Nothing
         else Just $ H.insert n c pm
     else Nothing
-  where free = case H.lookup n pm of 
+  where corOk (Disc p1 d1) (Disc p2 d2) = (d1 == d2) || (p1 /= p2)
+        free = case H.lookup n pm of 
                     Just _ -> False 
                     Nothing -> True
 
-color1ns :: PM -> G -> Prof -> [Int] -> Maybe PM
+color1ns :: PM -> G -> Disc -> [Int] -> Maybe PM
 color1ns pm g c = 
     listToMaybe . catMaybes . map (color1n pm g c)
 
@@ -50,7 +51,6 @@ color' errs pm g todo = case color pm g todo of
 genNodes :: Carga -> [LNode (Integer, Hor)]
 genNodes c = zip [1..] (horariosFases $ c ^. fases)
 
---genTodo1 c (n, (f, _)) = [(p, [n]) | p <- getProfs f c]
 genTodoProf ns (p, f1) = (p, [n | (n, (f2, _)) <- ns, f1 == f2])
 
 genTodo :: Carga -> [LNode (Integer, Hor)] -> TODO
@@ -66,7 +66,7 @@ makeQuadro pm g = Quadro [(h n g, f n g, p) | (n, p) <- H.toList pm]
           f n g = fst $ fromJust $ lab g n :: Integer
 
 
-solve :: Carga -> Either ([Prof], Quadro) Quadro
+solve :: Carga -> Either ([Disc], Quadro) Quadro
 solve c = q
     where ns = genNodes c
           es = filter filterEdge (allEdges ns)
@@ -76,12 +76,3 @@ solve c = q
           q = case color' [] H.empty g td of
             Left (td, pm') -> Left (map fst td, makeQuadro pm' g)
             Right pm' -> Right $ makeQuadro pm' g
-    --where ce = cargaEdges c
-     --     sm = simpleMatching ce
-      --    s = showMatching sm
-          --as = [(n, p) | (n, (f, p)) <- genProfFase c]
-          --bs = [(n, h, f) | (n, (h, f)) <- (genHorFase c)]
-          --pp = show s ++ "\n" ++ show as ++ "\n" ++ show bs
-
-          
-

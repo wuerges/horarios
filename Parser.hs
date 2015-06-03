@@ -10,7 +10,7 @@ csvFile =
        eof
        return $ foldl addResult emptyCarga results
 
-data ResLine = P (Integer, Prof) | T (Integer, Turno)
+data ResLine = P (Integer, Disc) | T (Integer, Turno)
     deriving Show
 
 addResult :: Carga -> ResLine -> Carga
@@ -22,7 +22,7 @@ line :: GenParser Char st ResLine
 line = 
     do 
        --c <- ( prof <|> parseHor <|> precolor <|> parseRestr )
-       c <- ( prof <|> parseFase )
+       c <- ( parseProf <|> parseFase )
        eol                       -- end of line
        return c
        
@@ -47,13 +47,14 @@ identifier s = do
     many (oneOf " ")
     return r
 
-prof :: GenParser Char st ResLine
-prof = 
+parseProf :: GenParser Char st ResLine
+parseProf = 
     do
        identifier "prof"
        n <- number
        p <- quotedString
-       return $ P (n, Prof p)
+       d <- quotedString
+       return $ P (n, Disc p d)
 
 parseTurno :: GenParser Char st Turno
 parseTurno =
