@@ -26,7 +26,7 @@ color1n pm g c n =
         then Nothing
         else Just $ H.insert n c pm
     else Nothing
-  where corProib (Disc p1 d1) (Disc p2 d2) = (p1 == p2) && (p1 /= p2)
+  where corProib (Disc p1 d1) (Disc p2 d2) = (p1 == p2) -- && (p1 == p2)
         free = case H.lookup n pm of 
                     Just _ -> False 
                     Nothing -> True
