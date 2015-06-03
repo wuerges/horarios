@@ -19,10 +19,15 @@ data Turno = Diurno | Noturno
 newtype Restr = Restr (Hor, Hor)
     deriving Show
 
-data Carga = Carga { _restr ::[Restr], _fases :: H.Map Integer Turno, _profs :: [(Disc, Integer)] }
+type Precolor = (Integer, Hor, Disc)
+
+data Carga = Carga { _restr ::[Restr]
+                   , _fases :: H.Map Integer Turno
+                   , _profs :: [(Disc, Integer)] 
+                   , _precolors :: [Precolor] }
     deriving Show 
 
-emptyCarga = Carga [] H.empty []
+emptyCarga = Carga [] H.empty [] []
 
 data Quadro = Quadro [(Hor, Integer, Disc)]
     deriving Show 
@@ -49,6 +54,8 @@ addProf f p c = profs %~ ((p, f):) $ c
 addProf2 :: Integer -> Disc -> Carga -> Carga
 addProf2 f p c = addProf f p $ addProf f p c
 
-
 addTurno :: Integer -> Turno -> Carga -> Carga
 addTurno f t c = fases %~ H.insert f t $ c
+
+addPrecolor :: Precolor -> Carga -> Carga
+addPrecolor  p c = precolors %~ (p:)  $ c

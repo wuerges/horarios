@@ -16,7 +16,7 @@ data ResLine = P (Integer, Disc) | T (Integer, Turno) | PC (Integer, Hor, Disc) 
 addResult :: Carga -> ResLine -> Carga
 addResult c (P (i, p)) = addProf2 i p c 
 addResult c (T (i, t)) = addTurno i t c
-addResult c (PC _ ) = c
+addResult c (PC x ) = addPrecolor x c
 addResult c Comment = c
 
 -- Each line contains 1 or more cells, separated by a comma

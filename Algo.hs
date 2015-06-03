@@ -72,6 +72,12 @@ makeQuadro pm g = Quadro [(h n g, f n g, p) | (n, p) <- H.toList pm]
     where h n g = snd $ fromJust $ lab g n :: Hor
           f n g = fst $ fromJust $ lab g n :: Integer
 
+precolorMap :: Carga -> [LNode (Integer, Hor)] -> PM
+precolorMap c ns = H.fromList [(n, d) | 
+                                (n, (f1, h1)) <- ns, 
+                                (f2, h2, d) <- c ^. precolors,
+                                (f1 == f2) && (h1 == h2)
+                              ]
 
 solve :: Carga -> Either ([Disc], Quadro) Quadro
 solve c = q
@@ -80,6 +86,7 @@ solve c = q
           es' = map (\((n1, _), (n2, _)) -> (n1, n2, ())) es
           g = mkGraph ns es' :: G
           td = genTodo c ns
-          q = case color' [] H.empty g td of
+          pcm = precolorMap c ns 
+          q = case color' [] pcm g td of
             Left (td, pm') -> Left (map fst td, makeQuadro pm' g)
             Right pm' -> Right $ makeQuadro pm' g
