@@ -10,19 +10,20 @@ csvFile =
        eof
        return $ foldl addResult emptyCarga results
 
-data ResLine = P (Integer, Disc) | T (Integer, Turno)
+data ResLine = P (Integer, Disc) | T (Integer, Turno) | PC (Integer, Hor, Disc) | Comment
     deriving Show
 
 addResult :: Carga -> ResLine -> Carga
 addResult c (P (i, p)) = addProf2 i p c 
 addResult c (T (i, t)) = addTurno i t c
+addResult c (PC _ ) = c
+addResult c Comment = c
 
 -- Each line contains 1 or more cells, separated by a comma
 line :: GenParser Char st ResLine
 line = 
     do 
-       --c <- ( prof <|> parseHor <|> precolor <|> parseRestr )
-       c <- ( parseProf <|> parseFase )
+       c <- ( parseProf <|> parseFase <|> parseComment <|> parsePrecolor )
        eol                       -- end of line
        return c
        
@@ -47,10 +48,26 @@ identifier s = do
     many (oneOf " ")
     return r
 
+parseComment :: GenParser Char st ResLine
+parseComment = do
+    string "--"
+    many (noneOf "\n")
+    return Comment
+
+parsePrecolor :: GenParser Char st ResLine
+parsePrecolor = do
+    identifier "precolor"
+    n <- number
+    dia <- number
+    h <- number
+    p <- quotedString
+    d <- quotedString
+    return $ PC (n, Hor dia h, Disc p d)
+
 parseProf :: GenParser Char st ResLine
 parseProf = 
     do
-       identifier "prof"
+       identifier "disc"
        n <- number
        p <- quotedString
        d <- quotedString
