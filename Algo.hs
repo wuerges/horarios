@@ -18,6 +18,13 @@ type G = Gr (Integer, Hor) ()
 type PM = H.Map Int Disc
 type TODO = [(Disc, [Int])]
 
+breakP p = case break (=='&') p of
+    (p1, "") -> [p1]
+    (p1, _:ps) -> p1:(breakP ps)
+
+profProib :: String -> String -> Bool
+profProib p1s p2s = any (\(a, b) -> a == b) [(p1, p2) | p1 <- breakP p1s, p2 <- breakP p2s]
+        
 color1n :: PM -> G -> Disc -> Int -> Maybe PM
 color1n pm g c n = 
     if free 
@@ -26,7 +33,7 @@ color1n pm g c n =
         then Nothing
         else Just $ H.insert n c pm
     else Nothing
-  where corProib (Disc p1 d1) (Disc p2 d2) = (p1 == p2) -- && (p1 == p2)
+  where corProib (Disc p1 d1) (Disc p2 d2) = profProib p1 p2 -- && (p1 == p2)
         free = case H.lookup n pm of 
                     Just _ -> False 
                     Nothing -> True
