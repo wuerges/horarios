@@ -18,7 +18,8 @@ main =
     do args <- getArgs
        case args of 
             ("--text":[]) -> mainText
-            ("--json":[]) -> mainJson
+            --("--json":[]) -> mainJson
+            _ -> mainJson
 
 doCarga r = 
     case solve r of
