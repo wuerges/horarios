@@ -112,7 +112,7 @@ solve c = q
           genQ td = case color' [] pcm g td of
             Left (td, pm') -> Left (map fst td, makeQuadro pm' g)
             Right pm' -> Right $ makeQuadro pm' g
-          qs = map genQ (take 1000 tds)
+          qs = map genQ (take 1 tds)
           q = case rights qs of
                 (r:_) -> Right r
                 [] -> Left $ minimumBy (\a b -> length (fst a) `compare` length (fst b)) (lefts qs)

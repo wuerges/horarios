@@ -1,23 +1,20 @@
+{-# LANGUAGE OverloadedStrings #-} 
 module View where
 
 import Model
 import Control.Lens
 
-toCsv [] = []
-toCsv (s:[]) = s
-toCsv (s:ss) = s ++ ", " ++ toCsv ss
+import Data.Aeson
+import qualified Data.Text.Lazy as T
+import qualified Data.Text.Lazy.IO as T
+import qualified Data.Text.Lazy.Encoding as T
 
-prettyPrintErr :: ([Disc], Quadro) -> String
-prettyPrintErr (ps, q) = 
-    unlines $ profErr:(lines $ prettyPrint q)
-        where profErr = "unallocated: " ++ toCsv (map sp ps)
-              sp p = "(" ++ p ^. nome ++ ", " ++ p ^. prof ++")"
 
-prettyPrint (Quadro t) =  
-    unlines $ header:content
-        where header = "dia, hora, fase, professor"
-              content = map (\(a, b, c) -> toCsv [show (a ^. dia), 
-                                                  show (a ^. hora), 
-                                                  show b, 
-                                                  c ^. prof,
-                                                  c ^. nome]) t
+toCsv :: [T.Text] -> T.Text
+toCsv = T.intercalate ", "
+
+prettyPrintErr :: ([Disc], Quadro) -> T.Text
+prettyPrintErr (d, q) = T.decodeUtf8 . encode $ ("Failure"::T.Text, d, q)
+
+prettyPrint :: Quadro -> T.Text
+prettyPrint q =  T.decodeUtf8 . encode $ ("Success"::T.Text, []::[Disc], q)

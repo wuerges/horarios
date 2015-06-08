@@ -6,6 +6,9 @@ import Control.Lens
 import Text.ParserCombinators.Parsec
 import Data.Maybe
 import qualified Data.Map as H
+import Data.Set as S
+import Data.Aeson.TH
+import Data.Aeson
 
 data Disc = Disc { _prof :: String, _nome :: String }
     deriving Show
@@ -16,25 +19,37 @@ data Hor = Hor { _dia :: Integer, _hora :: Integer }
 data Turno = Diurno | Noturno
     deriving (Ord, Eq, Show)
     
-newtype Restr = Restr (Hor, Hor)
-    deriving Show
-
 type Precolor = (Integer, Hor, Disc)
 
-data Carga = Carga { _restr ::[Restr]
-                   , _fases :: H.Map Integer Turno
+--type Fase = (Integer, 
+
+data CargaJ = CargaJ { __fases :: [(Integer, Turno)]
+                    , __profs :: [(Disc, Integer)]
+                    , __precolors :: [Precolor] }
+data Carga = Carga { _fases :: H.Map Integer Turno
                    , _profs :: [(Disc, Integer)] 
                    , _precolors :: [Precolor] }
     deriving Show 
 
-emptyCarga = Carga [] H.empty [] []
+
+toCarga :: CargaJ -> Carga
+toCarga c =  Carga { _fases = H.fromList $ __fases c
+                   , _profs = __profs c
+                   , _precolors = __precolors c }
+
+
+fromCarga :: Carga -> CargaJ
+fromCarga c = CargaJ { __fases = H.toList $ _fases c
+                     , __profs = _profs c
+                     , __precolors = _precolors c }
+
+emptyCarga = Carga H.empty [] []
 
 data Quadro = Quadro [(Hor, Integer, Disc)]
     deriving Show 
 
 $(makeLenses ''Disc)
 $(makeLenses ''Hor)
-$(makeLenses ''Restr)
 $(makeLenses ''Carga)
 $(makeLenses ''Quadro)
 
@@ -59,3 +74,10 @@ addTurno f t c = fases %~ H.insert f t $ c
 
 addPrecolor :: Precolor -> Carga -> Carga
 addPrecolor  p c = precolors %~ (p:)  $ c
+
+
+deriveJSON defaultOptions ''Hor
+deriveJSON defaultOptions ''Disc
+deriveJSON defaultOptions ''Quadro
+deriveJSON defaultOptions ''Turno
+deriveJSON defaultOptions ''CargaJ
