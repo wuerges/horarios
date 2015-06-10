@@ -22,9 +22,44 @@
 */
 
 var HORARIO = new function() {
+
+    this.renderGroup = function(theContainerId, theData, theLabels) {
+        var aContent = '',
+            aTable = '',
+            aTime,
+            aWeekDay;
+
+        theLabels = theLabels || {};
+
+        for(aTime = 0; aTime < 5; aTime++) {
+            aContent += '<tr>';
+            for(aWeekDay = 0; aWeekDay < 6; aWeekDay++) {
+                aContent += '<td>' + aWeekDay + '</td>';
+            }
+            aContent += '</tr>';
+        }
+
+        aTable +=
+            '<h3>' + (theLabels.title || 'No title') + '</h3>' +
+            '<table class="table table-bordered">' +
+                '<tr>' +
+                    '<th>Horário</th>' +
+                    '<th>Segunda-feira</th>' +
+                    '<th>Terça-feira</th>' +
+                    '<th>Quarta-feira</th>' +
+                    '<th>Quinta-feira</th>' +
+                    '<th>Sexta-feira</th>' +
+                '</tr>' +
+                aContent +
+            '</table>';
+
+        $('#' + theContainerId).html(aTable);
+    };
 };
 
 
 $(function() {
+    HORARIO.renderGroup('group-2', null, {title: '2a. Fase (Matutino)'});
+    HORARIO.renderGroup('group-3', null, {title: '4a. Fase (Matutino)'});
     console.log('hey!');
 });
