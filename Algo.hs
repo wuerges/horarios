@@ -48,18 +48,18 @@ color1ns :: PM -> G -> Disc -> [Int] -> Maybe PM
 color1ns pm g c = 
     listToMaybe . catMaybes . map (color1n pm g c)
 
-color :: PM -> G -> TODO -> Either (TODO, PM) PM
-color pm g [] = Right pm
+-- Colors a whole TODO or fails
+color :: PM -> G -> TODO -> (TODO, PM)
+color pm g [] = ([], pm)
 color pm g todo@((c, ns):cs) = case color1ns pm g c ns of 
     Just pm' -> color pm' g cs
-    Nothing -> Left (todo, pm)
+    Nothing -> (todo, pm)
 
-color' :: TODO -> PM -> G -> TODO -> Either (TODO, PM) PM
-color' errs pm g todo = case color pm g todo of 
-    Left (t:ts, pm) -> color' (t:errs) pm g ts
-    Right x -> case errs of 
-        [] -> Right x
-        errs -> Left (errs, x)
+color' :: TODO -> PM -> G -> [TODO] -> (TODO, PM)
+color' errs pm g [] = (errs, pm)
+color' errs pm g (t:ts) = case color pm g t of 
+    ([], pm') -> color' errs pm' g ts
+    (e', pm') -> color' (e' ++ errs) pm' g ts
     
 genNodes :: Carga -> [LNode (Integer, Hor)]
 genNodes c = zip [1..] (horariosFases $ c ^. fases)
@@ -68,16 +68,16 @@ genTodoProf ns (p, f1) = (p, [n | (n, (f2, _)) <- ns, f1 == f2])
 
 -- permutations $ map concat $ sequenceA $ map permutations [[1, 2], [4]]
 
-groupProfs :: [(Disc, Integer)] -> [[(Disc, Integer)]]
-groupProfs = groupBy (\a b -> snd a == snd b) . sortOn snd
+groupFases :: [(Disc, Integer)] -> [[(Disc, Integer)]]
+groupFases = groupBy (\a b -> snd a == snd b) . sortOn snd
 
-permuteGroups :: [[(Disc, Integer)]] -> [[(Disc, Integer)]]
-permuteGroups gs = map concat $ sequenceA $ map permutations $ gs
+-- permuteGroups :: [[(Disc, Integer)]] -> [[(Disc, Integer)]]
+-- permuteGroups gs = map concat $ sequenceA $ map permutations $ gs
 
 genTodoProfs :: [LNode (Integer, Hor)] -> [(Disc, Integer)] -> TODO
 genTodoProfs ns ps = map (genTodoProf ns) ps
 
-genTodos' ns ps = map (genTodoProfs ns) (permuteGroups . groupProfs $  ps)
+genTodos' ns ps = map (genTodoProfs ns) (groupFases $  ps)
 
 genTodos :: Carga -> [LNode (Integer, Hor)] -> [TODO]
 genTodos c ns = genTodos' ns ( c ^. profs )
@@ -109,10 +109,6 @@ solve c = q
           g = mkGraph ns es' :: G
           tds = genTodos c ns
           pcm = precolorMap c ns 
-          genQ td = case color' [] pcm g td of
-            Left (td, pm') -> Left (map fst td, makeQuadro pm' g)
-            Right pm' -> Right $ makeQuadro pm' g
-          qs = map genQ (take 1 tds)
-          q = case rights qs of
-                (r:_) -> Right r
-                [] -> Left $ minimumBy (\a b -> length (fst a) `compare` length (fst b)) (lefts qs)
+          q = case color' [] pcm g tds of
+            ([], pm') -> Right $ makeQuadro pm' g
+            (td, pm') -> Left (map fst td, makeQuadro pm' g)
