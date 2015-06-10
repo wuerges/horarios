@@ -3,4 +3,7 @@
 *.hi
 *.o
 alocador
-
+Setup.hs
+default.nix
+horarios.nix
+shel.nix
