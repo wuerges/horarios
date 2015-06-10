@@ -11,7 +11,7 @@ import Data.Aeson.TH
 import Data.Aeson
 
 data Disc = Disc { _prof :: String, _nome :: String }
-    deriving Show
+    deriving (Ord, Eq, Show)
 
 data Hor = Hor { _dia :: Integer, _hora :: Integer }
     deriving (Ord, Eq, Show)

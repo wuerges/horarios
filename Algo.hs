@@ -49,6 +49,13 @@ color1ns pm g c =
     listToMaybe . catMaybes . map (color1n pm g c)
 
 -- Colors a whole TODO or fails
+
+bestTodo :: [(TODO, PM)] -> (TODO, PM)
+bestTodo ts = head (sortOn fst $ take 1000 ts)
+
+colorPermute :: PM -> G -> TODO -> (TODO, PM)
+colorPermute pm g todo = bestTodo $ map (color pm g) (permutations todo)
+
 color :: PM -> G -> TODO -> (TODO, PM)
 color pm g [] = ([], pm)
 color pm g todo@((c, ns):cs) = case color1ns pm g c ns of 
@@ -57,7 +64,7 @@ color pm g todo@((c, ns):cs) = case color1ns pm g c ns of
 
 color' :: TODO -> PM -> G -> [TODO] -> (TODO, PM)
 color' errs pm g [] = (errs, pm)
-color' errs pm g (t:ts) = case color pm g t of 
+color' errs pm g (t:ts) = case colorPermute pm g t of 
     ([], pm') -> color' errs pm' g ts
     (e', pm') -> color' (e' ++ errs) pm' g ts
     
