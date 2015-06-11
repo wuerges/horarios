@@ -23,8 +23,8 @@ main =
 
 doCarga r = 
     case solve r of
-        Left e -> T.putStr $ prettyPrintErr e
-        Right s -> T.putStr $ prettyPrint s
+        Left e -> T.putStrLn $ prettyPrintErr e
+        Right s -> T.putStrLn $ prettyPrint s
 
 mainText = do
     parse <- parseCSV <$> getContents
