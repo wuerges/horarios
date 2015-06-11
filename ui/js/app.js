@@ -22,8 +22,72 @@
 */
 
 var HORARIO = new function() {
+    var mData = {
+        professors: {},
+        groups:     {},
+        failures:   {}
+    };
+    var mSelf = this;
 
-    this.renderGroup = function(theContainerId, theData, theLabels) {
+    var parseData = function(theData) {
+        parseFailureData(theData);
+        parseScheduleData(theData);
+    }
+
+    var parseFailureData = function(theData) {
+        mData.failures = theData[0] == 'Failure' ? theData[1] : []
+    };
+
+    var parseScheduleData = function(theData) {
+        var aFailures,
+            aSchedules,
+            aEntry,
+            i,
+            j,
+            aGroup;
+
+        aSchedules = theData[2];
+
+        for(i = 0; i < aSchedules.length; i++) {
+            aEntry = aSchedules[i];
+            aGroup = aEntry[1];
+
+            if(mData.groups[aGroup] == null) {
+                mData.groups[aGroup] = {
+                    'days': {}
+                };
+            }
+
+            mData.groups[aGroup]['days'][aEntry[0]._dia] = mData.groups[aGroup]['days'][aEntry[0]._dia] || {};
+
+            mData.groups[aGroup]['days'][aEntry[0]._dia][aEntry[0]._hora] = {
+                day:        aEntry[0]._dia,
+                time:       aEntry[0]._hora,
+                professor:  aEntry[2]._prof,
+                course:     aEntry[2]._nome
+            };
+
+            // Colect information related to professors
+            mData.professors[aGroup] = mData.professors[aGroup] || {};
+            mData.professors[aGroup][aEntry[2]._prof] = mData.professors[aGroup][aEntry[2]._prof] || {name: '', courses: {}};
+            mData.professors[aGroup][aEntry[2]._prof].name = aEntry[2]._prof;
+            mData.professors[aGroup][aEntry[2]._prof].courses[aEntry[2]._nome] = true;
+        }
+    }
+
+    var loadData = function() {
+        $.ajax({
+            url: '../inputs/teste3_json.out', // TODO: use correct backend URL here
+            dataType: 'json'
+        }).done(function(theData) {
+            parseData(theData);
+
+        }).fail(function(theJqXHR, theTextStatus, theErrorThrown) {
+            console.error('Fail!');
+        });
+    };
+
+    var renderGroup = function(theContainerId, theData, theLabels) {
         var aContent = '',
             aTable = '',
             aTime,
@@ -55,11 +119,14 @@ var HORARIO = new function() {
 
         $('#' + theContainerId).html(aTable);
     };
+
+    this.init = function() {
+        loadData();
+    }
 };
 
 
 $(function() {
-    HORARIO.renderGroup('group-2', null, {title: '2a. Fase (Matutino)'});
-    HORARIO.renderGroup('group-3', null, {title: '4a. Fase (Matutino)'});
+    HORARIO.init();
     console.log('hey!');
 });
