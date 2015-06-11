@@ -64,8 +64,7 @@ var HORARIO = new function() {
             mData.groups[aGroup]['times'][aEntry[0]._hora][aEntry[0]._dia] = {
                 day:        aEntry[0]._dia,
                 time:       aEntry[0]._hora,
-                professor:  aEntry[2]._prof,
-                course:     aEntry[2]._nome
+                course:     {name: aEntry[2]._nome, professor: aEntry[2]._prof}
             };
 
             // Colect information related to professors
@@ -85,6 +84,7 @@ var HORARIO = new function() {
             dataType: 'json'
         }).done(function(theData) {
             parseData(theData);
+            console.debug(mData);
 
             if(theCallback) {
                 theCallback();
@@ -102,26 +102,27 @@ var HORARIO = new function() {
             $('#' + theContainerId).append(
                 '<div class="row schedule-row">' +
                     '<div id="group-'+ aGroup +'" class="col-lg-10">' +
-                        renderGroup(mData.groups[aGroup], {title: 'Fase ' + aGroup}) +
+                        renderGroup(aGroup, {title: 'Fase ' + aGroup}) +
                     '</div>' +
                 '</div>' +
                 '<div class="row schedule-caption-row">' +
                     '<div id="caption-'+ aGroup +'" class="col-lg-10">' +
-                        renderGroupCaption(mData.professors[aGroup]) +
+                        renderGroupCaption(aGroup) +
                     '</div>' +
                 '</div>'
             );
         }
     }
 
-    var renderGroupCaption = function(theProfessors) {
+    var renderGroupCaption = function(theGroupId) {
         var aName,
             aId,
             aCourse,
-            aRet = [];
+            aRet = [],
+            aData = mData.professors[theGroupId];
 
-        for(aName in theProfessors) {
-            for(aCourse in theProfessors[aName].courses) {
+        for(aName in aData) {
+            for(aCourse in aData[aName].courses) {
                 aRet.push('<li>' + aCourse + ' (' + aName + ') </li>');
             }
         }
@@ -129,27 +130,28 @@ var HORARIO = new function() {
         return aRet.join('');
     }
 
-    var renderGroup = function(theData, theLabels) {
+    var renderGroup = function(theGroupId, theLabels) {
         var aContent = '',
             aTable = '',
             aTime,
             aDays,
             aInfo,
             aCourseName,
-            aWeekDay;
+            aWeekDay,
+            aData = mData.groups[theGroupId];
 
         theLabels = theLabels || {};
 
-        for(aTime in theData.times) {
-            aDays = theData.times[aTime];
+        for(aTime in aData.times) {
+            aDays = aData.times[aTime];
             aContent += '<tr>';
             aContent += '<td>' + aTime + '</td>';
 
             for(aWeekDay = 1; aWeekDay <= 5; aWeekDay++) {
                 aInfo       = aDays[aWeekDay];
-                aCourseName = aInfo ? aInfo.course : '';
+                aCourseName = aInfo ? aInfo.course.name : '';
 
-                aContent += '<td class="clickable" data-course="' + aCourseName + '">' + aCourseName + '</td>';
+                aContent += '<td class="clickable" data-course="' + aCourseName + '" data-group="' + theGroupId + '" data-day="' + aWeekDay + '" + data-time="' + aTime + '">' + aCourseName + '</td>';
             }
             aContent += '</tr>';
         }
@@ -171,6 +173,26 @@ var HORARIO = new function() {
         return aTable;
     };
 
+
+    var swapCoursesByCell = function(theCellA, theCellB) {
+        var aInfoA,
+            aInfoB,
+            aCourse;
+
+        aInfoA = mData.groups[theCellA.data('group')].times[theCellA.data('time')][theCellA.data('day')];
+        aInfoB = mData.groups[theCellB.data('group')].times[theCellB.data('time')][theCellB.data('day')];
+
+        aCourse         = aInfoA.course;
+        aInfoA.course   = aInfoB.course;
+        aInfoB.course   = aCourse;
+
+        theCellA.data('course', aInfoA.course.name);
+        theCellB.data('course', aInfoB.course.name);
+
+        updateCellContent(theCellB);
+        updateCellContent(theCellA);
+    };
+
     var handleCellClick = function() {
         var aCurrent = $(this),
             aOther,
@@ -186,13 +208,7 @@ var HORARIO = new function() {
             if(aOther) {
                 // Yep! Let's swap the two selected items
                 aOther  = $(aOther);
-                aCourse = aOther.data('course');
-
-                aOther.data('course', aCurrent.data('course'));
-                aCurrent.data('course', aCourse);
-
-                updateCellContent(aCurrent);
-                updateCellContent(aOther);
+                swapCoursesByCell(aOther, aCurrent);
 
                 aOther.removeClass('selected');
 
