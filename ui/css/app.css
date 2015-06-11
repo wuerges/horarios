@@ -1,0 +1,9 @@
+.schedule-row {
+    margin-top: 30px;
+}
+
+.schedule-caption-row li {
+    float: left;
+    width: 32%;
+    list-style-type: none;
+}

@@ -54,13 +54,13 @@ var HORARIO = new function() {
 
             if(mData.groups[aGroup] == null) {
                 mData.groups[aGroup] = {
-                    'days': {}
+                    'times': {}
                 };
             }
 
-            mData.groups[aGroup]['days'][aEntry[0]._dia] = mData.groups[aGroup]['days'][aEntry[0]._dia] || {};
+            mData.groups[aGroup]['times'][aEntry[0]._hora] = mData.groups[aGroup]['times'][aEntry[0]._hora] || {};
 
-            mData.groups[aGroup]['days'][aEntry[0]._dia][aEntry[0]._hora] = {
+            mData.groups[aGroup]['times'][aEntry[0]._hora][aEntry[0]._dia] = {
                 day:        aEntry[0]._dia,
                 time:       aEntry[0]._hora,
                 professor:  aEntry[2]._prof,
@@ -81,24 +81,70 @@ var HORARIO = new function() {
             dataType: 'json'
         }).done(function(theData) {
             parseData(theData);
+            renderSchedule('main');
 
         }).fail(function(theJqXHR, theTextStatus, theErrorThrown) {
             console.error('Fail!');
         });
     };
 
-    var renderGroup = function(theContainerId, theData, theLabels) {
+    var renderSchedule = function(theContainerId) {
+        var aGroup;
+
+        for(aGroup in mData.groups) {
+            $('#' + theContainerId).append(
+                '<div class="row schedule-row">' +
+                    '<div id="group-'+ aGroup +'" class="col-lg-10">' +
+                        renderGroup(mData.groups[aGroup], {title: 'Fase ' + aGroup}) +
+                    '</div>' +
+                '</div>' +
+                '<div class="row schedule-caption-row">' +
+                    '<div id="caption-'+ aGroup +'" class="col-lg-10">' +
+                        renderGroupCaption(mData.professors[aGroup]) +
+                    '</div>' +
+                '</div>'
+            );
+        }
+    }
+
+    var renderGroupCaption = function(theProfessors) {
+        var aName,
+            aId,
+            aCourse,
+            aRet = [];
+
+        for(aName in theProfessors) {
+            for(aCourse in theProfessors[aName].courses) {
+                aRet.push('<li>' + aCourse + ' (' + aName + ') </li>');
+            }
+        }
+
+        return aRet.join('');
+    }
+
+    var renderGroup = function(theData, theLabels) {
         var aContent = '',
             aTable = '',
             aTime,
+            aDays,
+            aInfo,
             aWeekDay;
 
         theLabels = theLabels || {};
 
-        for(aTime = 0; aTime < 5; aTime++) {
+        for(aTime in theData.times) {
+            aDays = theData.times[aTime];
             aContent += '<tr>';
-            for(aWeekDay = 0; aWeekDay < 6; aWeekDay++) {
-                aContent += '<td>' + aWeekDay + '</td>';
+            aContent += '<td>' + aTime + '</td>';
+
+            for(aWeekDay = 1; aWeekDay <= 5; aWeekDay++) {
+                aInfo = aDays[aWeekDay];
+
+                if(aInfo) {
+                    aContent += '<td>' + aInfo.course + '</td>';
+                } else {
+                    aContent += '<td></td>';
+                }
             }
             aContent += '</tr>';
         }
@@ -117,7 +163,7 @@ var HORARIO = new function() {
                 aContent +
             '</table>';
 
-        $('#' + theContainerId).html(aTable);
+        return aTable;
     };
 
     this.init = function() {
@@ -128,5 +174,4 @@ var HORARIO = new function() {
 
 $(function() {
     HORARIO.init();
-    console.log('hey!');
 });
