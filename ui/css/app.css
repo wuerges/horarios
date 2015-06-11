@@ -2,6 +2,23 @@
     margin-top: 30px;
 }
 
+.schedule-row table td {
+}
+
+.schedule-row table td.clickable {
+    cursor: pointer;
+}
+
+.schedule-row table td.clickable:hover {
+    cursor: pointer;
+    background: #C4F0FF;
+}
+
+.schedule-row table td.selected {
+    border: dashed #ff0000 2px;
+    background: #C2C4FF;
+}
+
 .schedule-caption-row li {
     float: left;
     width: 32%;

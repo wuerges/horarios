@@ -25,6 +25,7 @@ var HORARIO = new function() {
     var mData = {
         professors: {},
         groups:     {},
+        courses:    {},
         failures:   {}
     };
     var mSelf = this;
@@ -72,16 +73,22 @@ var HORARIO = new function() {
             mData.professors[aGroup][aEntry[2]._prof] = mData.professors[aGroup][aEntry[2]._prof] || {name: '', courses: {}};
             mData.professors[aGroup][aEntry[2]._prof].name = aEntry[2]._prof;
             mData.professors[aGroup][aEntry[2]._prof].courses[aEntry[2]._nome] = true;
+
+            // Colect information related to courses
+            mData.courses[aEntry[2]._nome] = aEntry[2]._nome;
         }
     }
 
-    var loadData = function() {
+    var loadData = function(theCallback) {
         $.ajax({
             url: '../inputs/teste3_json.out', // TODO: use correct backend URL here
             dataType: 'json'
         }).done(function(theData) {
             parseData(theData);
-            renderSchedule('main');
+
+            if(theCallback) {
+                theCallback();
+            }
 
         }).fail(function(theJqXHR, theTextStatus, theErrorThrown) {
             console.error('Fail!');
@@ -128,6 +135,7 @@ var HORARIO = new function() {
             aTime,
             aDays,
             aInfo,
+            aCourseName,
             aWeekDay;
 
         theLabels = theLabels || {};
@@ -138,13 +146,10 @@ var HORARIO = new function() {
             aContent += '<td>' + aTime + '</td>';
 
             for(aWeekDay = 1; aWeekDay <= 5; aWeekDay++) {
-                aInfo = aDays[aWeekDay];
+                aInfo       = aDays[aWeekDay];
+                aCourseName = aInfo ? aInfo.course : '';
 
-                if(aInfo) {
-                    aContent += '<td>' + aInfo.course + '</td>';
-                } else {
-                    aContent += '<td></td>';
-                }
+                aContent += '<td class="clickable" data-course="' + aCourseName + '">' + aCourseName + '</td>';
             }
             aContent += '</tr>';
         }
@@ -166,8 +171,54 @@ var HORARIO = new function() {
         return aTable;
     };
 
+    var handleCellClick = function() {
+        var aCurrent = $(this),
+            aOther,
+            aCourse;
+
+        if(aCurrent.hasClass('selected')) {
+            aCurrent.removeClass('selected');
+
+        } else {
+            aOther = $('td.selected.clickable').first()[0];
+
+            // Is there anything already selected?
+            if(aOther) {
+                // Yep! Let's swap the two selected items
+                aOther  = $(aOther);
+                aCourse = aOther.data('course');
+
+                aOther.data('course', aCurrent.data('course'));
+                aCurrent.data('course', aCourse);
+
+                updateCellContent(aCurrent);
+                updateCellContent(aOther);
+
+                aOther.removeClass('selected');
+
+            } else {
+                aCurrent.addClass('selected');
+            }
+        }
+    };
+
+    var updateCellContent = function(theObject) {
+        theObject.fadeOut('fast', function() {
+            $(this).html(theObject.data('course')).fadeIn('fast');
+        });
+    };
+
+    var enhance = function() {
+        $('#main td.clickable').each(function(theIndex, theElement) {
+            $(theElement).click(handleCellClick);
+        });
+    };
+
     this.init = function() {
-        loadData();
+        loadData(function() {
+            renderSchedule('main');
+            enhance();
+        });
     }
 };
 
