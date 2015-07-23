@@ -64,7 +64,8 @@ var HORARIO = new function() {
             mData.groups[aGroup]['times'][aEntry[0]._hora][aEntry[0]._dia] = {
                 day:        aEntry[0]._dia,
                 time:       aEntry[0]._hora,
-                course:     {name: aEntry[2]._nome, professor: aEntry[2]._prof}
+                course:     {name: aEntry[2]._nome, professor: aEntry[2]._prof},
+                locked:     false
             };
 
             // Colect information related to professors
@@ -173,14 +174,21 @@ var HORARIO = new function() {
         return aTable;
     };
 
+    var getCourseInfoByCell = function(theCell) {
+        return getCourseInfoByMeta(theCell.data('group'), theCell.data('time'), theCell.data('day'));
+    };
+
+    var getCourseInfoByMeta = function(theGroup, theTime, theDay) {
+        return mData.groups[theGroup].times[theTime][theDay];
+    };
 
     var swapCoursesByCell = function(theCellA, theCellB) {
         var aInfoA,
             aInfoB,
             aCourse;
 
-        aInfoA = mData.groups[theCellA.data('group')].times[theCellA.data('time')][theCellA.data('day')];
-        aInfoB = mData.groups[theCellB.data('group')].times[theCellB.data('time')][theCellB.data('day')];
+        aInfoA = getCourseInfoByCell(theCellA);
+        aInfoB = getCourseInfoByCell(theCellB);
 
         aCourse         = aInfoA.course;
         aInfoA.course   = aInfoB.course;
@@ -216,6 +224,9 @@ var HORARIO = new function() {
                 aCurrent.addClass('selected');
             }
         }
+    };
+
+    var renderCellContent = function(theInfo) {
     };
 
     var updateCellContent = function(theObject) {
