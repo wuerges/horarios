@@ -130,7 +130,7 @@ var HORARIO = new function() {
             }
         }
 
-        aRet.push('<li><a href="javascript:void(0)" data-group="' + theGroup + '" class="add-professor"><i class="fa fa-user-plus"></i> Adicionar</a></li>');
+        aRet.push('<li><a href="javascript:void(0)" data-group="' + theGroupId + '" class="add-professor"><i class="fa fa-user-plus"></i> Adicionar</a></li>');
 
         return aRet.join('');
     }
