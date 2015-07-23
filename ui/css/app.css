@@ -24,3 +24,17 @@
     width: 32%;
     list-style-type: none;
 }
+
+.row-ui-professor-manager {
+    display: none;
+    background: #9c9c9c;
+    text-align: center;
+}
+
+.cell-buttons {
+    display: none;
+}
+
+.cell-buttons i {
+    margin-left: 5px;
+}

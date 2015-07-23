@@ -87,7 +87,6 @@ var HORARIO = new function() {
             dataType: 'json'
         }).done(function(theData) {
             parseData(theData);
-            console.debug(mData);
 
             if(theCallback) {
                 theCallback();
@@ -105,9 +104,14 @@ var HORARIO = new function() {
             $('#' + theContainerId).append(
                 '<div class="row schedule-row">' +
                     '<div id="group-'+ aGroup +'" class="col-lg-10">' +
-                        renderGroup(aGroup, {title: 'Fase ' + aGroup}) +
+                        renderGroupSchedule(aGroup, {title: 'Fase ' + aGroup}) +
                     '</div>' +
                 '</div>' +
+
+                '<div class="row">' +
+                    '<div class="row-ui-professor-manager row-ui-professor-manager-' + aGroup +' col-lg-10"></div>' +
+                '</div>'+
+
                 '<div class="row schedule-caption-row">' +
                     '<div id="caption-'+ aGroup +'" class="col-lg-10">' +
                         renderGroupCaption(aGroup) +
@@ -130,12 +134,10 @@ var HORARIO = new function() {
             }
         }
 
-        aRet.push('<li><a href="javascript:void(0)" data-group="' + theGroupId + '" class="add-professor"><i class="fa fa-user-plus"></i> Adicionar</a></li>');
-
         return aRet.join('');
     }
 
-    var renderGroup = function(theGroupId, theLabels) {
+    var renderGroupSchedule = function(theGroupId, theLabels) {
         var aContent = '',
             aTable = '',
             aTime,
@@ -156,7 +158,7 @@ var HORARIO = new function() {
                 aInfo       = aDays[aWeekDay];
                 aCourseName = aInfo ? aInfo.course.name : '';
 
-                aContent += '<td class="clickable" data-course="' + aCourseName + '" data-group="' + theGroupId + '" data-day="' + aWeekDay + '" + data-time="' + aTime + '">' + aCourseName + '</td>';
+                aContent += '<td class="clickable" data-course="' + aCourseName + '" data-group="' + theGroupId + '" data-day="' + aWeekDay + '" + data-time="' + aTime + '">' + renderCellContent(aCourseName) + '</td>';
             }
             aContent += '</tr>';
         }
@@ -230,6 +232,14 @@ var HORARIO = new function() {
         }
     };
 
+    var handleCellHoverIn = function() {
+        $(this).find('.cell-buttons').show();
+    };
+
+    var handleCellHoverOut = function() {
+        $(this).find('.cell-buttons').hide();
+    };
+
     var generateNewProfessorForm = function(theGroup) {
         var aRet =
             '<form class="form-inline" id="formProfessor' + theGroup + '">' +
@@ -245,35 +255,85 @@ var HORARIO = new function() {
         return aRet;
     }
 
+    var updateDataEntry = function(theGroup, theTime, theDay, theCourse, theProfessor) {
+        var aInfo;
+
+        if(!mData.groups[theGroup].times[theTime][theDay]) {
+            mData.groups[theGroup].times[theTime][theDay] = {
+                day: 0,
+                time: 0,
+                locked: false,
+                course: {
+                    name: '',
+                    professor: ''
+                }
+            };
+        }
+
+        aInfo = mData.groups[theGroup].times[theTime][theDay];
+
+        aInfo.day   = theDay;
+        aInfo.time  = theTime;
+
+        aInfo.course.name       = theCourse;
+        aInfo.course.professor  = theProfessor;
+    };
+
     var handleNewProfessorClick = function() {
         var aElement    = $(this),
-            aGroup      = aElement.data('group'),
-            aContainer  = aElement.parent(),
+            aCell       = aElement.parent().parent(), // TODO: remove all those parent() stuff
+            aGroup      = aCell.data('group'),
+            aContainer  = $('div.row-ui-professor-manager-' + aGroup),
             aForm;
 
-        aContainer.html(generateNewProfessorForm(aGroup));
+        aContainer.hide().html(generateNewProfessorForm(aGroup)).slideDown();
 
         $('#formProfessor' + aGroup).submit(function() {
-            // TODO: implement the remaining parts
             aForm = document.getElementById('formProfessor' + aGroup);
-            aContainer.html(aForm.elements.course.value + ' (' + aForm.elements.professor.value +')');
+
+            // Update the internal schedule database
+            updateDataEntry(aGroup,
+                            aCell.data('time'),
+                            aCell.data('day'),
+                            aForm.elements.course.value,
+                            aForm.elements.professor.value);
+
+            // Update and refresh the selected cell with new course info
+            aCell.data('course', aForm.elements.course.value);
+            updateCellContent(aCell);
+
+            // Hide the editing UI.
+            aContainer.slideUp();
 
             return false;
         });
     };
 
     var renderCellContent = function(theInfo) {
+        var aRet = '';
+
+        aRet += '<a href="javascript:void(0)" class="select-professor"><i class="fa fa-toggle-down"></i></a>';
+
+        if(theInfo && theInfo != '') {
+            aRet += '<a href="javascript:void(0)" class="remove-professor"><i class="fa fa-trash"></i></a>';
+
+        } else {
+            aRet += '<a href="javascript:void(0)" class="add-professor"><i class="fa fa-plus-circle"></i></a>';
+        }
+
+        return theInfo + '<span class="cell-buttons pull-right">' + aRet + '</span>';
     };
 
     var updateCellContent = function(theObject) {
         theObject.fadeOut('fast', function() {
-            $(this).html(theObject.data('course')).fadeIn('fast');
+            $(this).html(renderCellContent(theObject.data('course'))).fadeIn('fast');
         });
     };
 
     var enhance = function() {
         $('#main td.clickable').each(function(theIndex, theElement) {
             $(theElement).click(handleCellClick);
+            $(theElement).hover(handleCellHoverIn, handleCellHoverOut);
         });
 
         $('#main a.add-professor').each(function(theIndex, theElement) {
