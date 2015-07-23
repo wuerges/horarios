@@ -77,6 +77,8 @@ var HORARIO = new function() {
             // Colect information related to courses
             mData.courses[aEntry[2]._nome] = aEntry[2]._nome;
         }
+
+        console.debug(mData);
     }
 
     var loadData = function(theCallback) {
@@ -127,6 +129,8 @@ var HORARIO = new function() {
                 aRet.push('<li>' + aCourse + ' (' + aName + ') </li>');
             }
         }
+
+        aRet.push('<li><a href="javascript:void(0)" data-group="' + theGroup + '" class="add-professor"><i class="fa fa-user-plus"></i> Adicionar</a></li>');
 
         return aRet.join('');
     }
@@ -226,6 +230,38 @@ var HORARIO = new function() {
         }
     };
 
+    var generateNewProfessorForm = function(theGroup) {
+        var aRet =
+            '<form class="form-inline" id="formProfessor' + theGroup + '">' +
+              '<div class="form-group">' +
+                '<input type="text" class="form-control" name="course" placeholder="Componente currucular">' +
+              '</div>' +
+              '<div class="form-group">' +
+                '<input type="text" class="form-control" name="professor" placeholder="Professor">' +
+              '</div>' +
+              '<button type="submit" class="btn btn-default"><i class="fa fa-plus"></i> Adicionar</button>' +
+            '</form>';
+
+        return aRet;
+    }
+
+    var handleNewProfessorClick = function() {
+        var aElement    = $(this),
+            aGroup      = aElement.data('group'),
+            aContainer  = aElement.parent(),
+            aForm;
+
+        aContainer.html(generateNewProfessorForm(aGroup));
+
+        $('#formProfessor' + aGroup).submit(function() {
+            // TODO: implement the remaining parts
+            aForm = document.getElementById('formProfessor' + aGroup);
+            aContainer.html(aForm.elements.course.value + ' (' + aForm.elements.professor.value +')');
+
+            return false;
+        });
+    };
+
     var renderCellContent = function(theInfo) {
     };
 
@@ -238,6 +274,10 @@ var HORARIO = new function() {
     var enhance = function() {
         $('#main td.clickable').each(function(theIndex, theElement) {
             $(theElement).click(handleCellClick);
+        });
+
+        $('#main a.add-professor').each(function(theIndex, theElement) {
+            $(theElement).click(handleNewProfessorClick);
         });
     };
 
