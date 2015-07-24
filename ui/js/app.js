@@ -97,6 +97,30 @@ var HORARIO = new function() {
         });
     };
 
+    var findExistingCourses = function(theGroup) {
+        var aRet = [],
+            aGroup,
+            aTime,
+            aDay,
+            aCourse;
+
+        for(aGroup in mData.groups) {
+            // Check if we are filtering the result by group.
+            if(theGroup && theGroup != aGroup) break;
+
+            for(aTime in mData.groups[aGroup].times) {
+                for(aDay in mData.groups[aGroup].times[aTime]) {
+                    aCourse = mData.groups[aGroup].times[aTime][aDay].course;
+                    if(aCourse) {
+                        aRet.push(aCourse);
+                    }
+                }
+            }
+        }
+
+        return aRet;
+    }
+
     var renderSchedule = function(theContainerId) {
         var aGroup;
 
@@ -240,9 +264,12 @@ var HORARIO = new function() {
         $(this).find('.cell-buttons').hide();
     };
 
-    var generateNewProfessorForm = function(theGroup) {
-        var aRet =
-            '<form class="form-inline" id="formProfessor' + theGroup + '">' +
+    var insertNewProfessorFormInto = function(theContainer, theGroupId) {
+        var aForm,
+            aFormId = 'formProfessor' + theGroupId;
+
+        aForm = '' +
+            '<form class="form-inline" id="' + aFormId + '">' +
               '<div class="form-group">' +
                 '<input type="text" class="form-control" name="course" placeholder="Componente currucular">' +
               '</div>' +
@@ -252,7 +279,58 @@ var HORARIO = new function() {
               '<button type="submit" class="btn btn-default"><i class="fa fa-plus"></i> Adicionar</button>' +
             '</form>';
 
-        return aRet;
+        theContainer.hide().html(aForm).slideDown();
+
+        return aFormId;
+    }
+
+    var generateProfessorsOptionList = function() {
+        var aRet = '',
+            aCourses,
+            i,
+            aTotal;
+
+        aCourses = findExistingCourses();
+
+        for(i = 0, aTotal = aCourses.length; i < aTotal; i++) {
+            aRet += '<option value="' + aCourses[i].professor + '###' + aCourses[i].name + '">' + aCourses[i].name + '(' + aCourses[i].professor + ')</option>';
+        }
+
+        return '<option value="###">Selecione...</option><option value=""></option>' + aRet;
+    }
+
+    var insertSelectProfessorFormInto = function(theContainer, theGroupId) {
+        var aContent,
+            aForm,
+            aValues,
+            aFormId = 'formProfessor' + theGroupId;
+
+        aContent = '' +
+            '<form class="form-inline" id="' + aFormId + '">' +
+              '<div class="form-group">' +
+                '<input type="hidden" name="course" />' +
+                '<input type="hidden" name="professor" />' +
+                '<select name="professorSelection" id="professorSelection' + theGroupId + '">' +
+                    generateProfessorsOptionList() +
+                '</select>' +
+              '</div>' +
+            '</form>';
+
+        theContainer.html(aContent);
+
+        // When the user selects something on the dropdown,
+        // we update the internal form and send the data away.
+        $('#professorSelection' + theGroupId).on('change blur focusout', function() {
+            aForm   = document.getElementById(aFormId);
+            aValues = $(this).val().split('###');
+
+            aForm.elements.course.value     = aValues[1] || '';
+            aForm.elements.professor.value  = aValues[0] || '';
+
+            $('#' + aFormId).submit();
+        });
+
+        return aFormId;
     }
 
     var updateDataEntry = function(theGroup, theTime, theDay, theCourse, theProfessor) {
@@ -277,19 +355,40 @@ var HORARIO = new function() {
 
         aInfo.course.name       = theCourse;
         aInfo.course.professor  = theProfessor;
+
+        console.debug('Data has changed.', mData);
     };
 
     var handleNewProfessorClick = function() {
         var aElement    = $(this),
+            aUseSelect  = aElement.hasClass('select-professor'),
             aCell       = aElement.parent().parent(), // TODO: remove all those parent() stuff
             aGroup      = aCell.data('group'),
             aContainer  = $('div.row-ui-professor-manager-' + aGroup),
-            aForm;
+            aForm,
+            aFormId;
 
-        aContainer.hide().html(generateNewProfessorForm(aGroup)).slideDown();
+        // For the sake of usability, siable all clickable behavior
+        // for this cell. It will be enabled back when the user is
+        // done editing the cell content.
+        aCell.off();
 
-        $('#formProfessor' + aGroup).submit(function() {
-            aForm = document.getElementById('formProfessor' + aGroup);
+        // Check what type of professor addition it is. It can be a "dropdown" selecting
+        // one where the user chooses the professor name from a list. Or it can be the
+        // addition of a brand new professor, made in a separate UI.
+        if(aUseSelect) {
+            // Select from dropdown.
+            aFormId = insertSelectProfessorFormInto(aCell, aGroup);
+
+        } else {
+            // Use the separate UI to allow the user to input the new professor info.
+            aFormId = insertNewProfessorFormInto(aContainer, aGroup);
+        }
+
+        // Handle the submition of the UI form fired when
+        // the user is done editing everything.
+        $('#' + aFormId).submit(function() {
+            aForm = document.getElementById(aFormId);
 
             // Update the internal schedule database
             updateDataEntry(aGroup,
@@ -302,8 +401,13 @@ var HORARIO = new function() {
             aCell.data('course', aForm.elements.course.value);
             updateCellContent(aCell);
 
-            // Hide the editing UI.
-            aContainer.slideUp();
+            // Hide the editing UI, if needed
+            if(!aUseSelect) {
+                aContainer.slideUp();
+            }
+
+            // Restore cell clickable behavior
+            enhanceAllElements();
 
             return false;
         });
@@ -327,16 +431,19 @@ var HORARIO = new function() {
     var updateCellContent = function(theObject) {
         theObject.fadeOut('fast', function() {
             $(this).html(renderCellContent(theObject.data('course'))).fadeIn('fast');
+            enhanceAllElements();
         });
     };
 
-    var enhance = function() {
+    var enhanceAllElements = function() {
         $('#main td.clickable').each(function(theIndex, theElement) {
+            $(theElement).off();
             $(theElement).click(handleCellClick);
             $(theElement).hover(handleCellHoverIn, handleCellHoverOut);
         });
 
-        $('#main a.add-professor').each(function(theIndex, theElement) {
+        $('#main a.add-professor, #main a.select-professor').each(function(theIndex, theElement) {
+            $(theElement).off();
             $(theElement).click(handleNewProfessorClick);
         });
     };
@@ -344,7 +451,7 @@ var HORARIO = new function() {
     this.init = function() {
         loadData(function() {
             renderSchedule('main');
-            enhance();
+            enhanceAllElements();
         });
     }
 };
