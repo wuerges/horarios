@@ -67,15 +67,6 @@ var HORARIO = new function() {
                 course:     {name: aEntry[2]._nome, professor: aEntry[2]._prof},
                 locked:     false
             };
-
-            // Colect information related to professors
-            mData.professors[aGroup] = mData.professors[aGroup] || {};
-            mData.professors[aGroup][aEntry[2]._prof] = mData.professors[aGroup][aEntry[2]._prof] || {name: '', courses: {}};
-            mData.professors[aGroup][aEntry[2]._prof].name = aEntry[2]._prof;
-            mData.professors[aGroup][aEntry[2]._prof].courses[aEntry[2]._nome] = true;
-
-            // Colect information related to courses
-            mData.courses[aEntry[2]._nome] = aEntry[2]._nome;
         }
 
         console.debug(mData);
@@ -99,6 +90,7 @@ var HORARIO = new function() {
 
     var findExistingCourses = function(theGroup) {
         var aRet = [],
+            aItens = {},
             aGroup,
             aTime,
             aDay,
@@ -106,16 +98,20 @@ var HORARIO = new function() {
 
         for(aGroup in mData.groups) {
             // Check if we are filtering the result by group.
-            if(theGroup && theGroup != aGroup) break;
+            if(theGroup && theGroup != aGroup) continue;
 
             for(aTime in mData.groups[aGroup].times) {
                 for(aDay in mData.groups[aGroup].times[aTime]) {
                     aCourse = mData.groups[aGroup].times[aTime][aDay].course;
-                    if(aCourse) {
-                        aRet.push(aCourse);
+                    if(aCourse && aCourse.name != '') {
+                        aItens[aCourse.name + aCourse.professor] = aCourse;
                     }
                 }
             }
+        }
+
+        for(aCourse in aItens) {
+            aRet.push(aItens[aCourse]);
         }
 
         return aRet;
@@ -127,9 +123,7 @@ var HORARIO = new function() {
         for(aGroup in mData.groups) {
             $('#' + theContainerId).append(
                 '<div class="row schedule-row">' +
-                    '<div id="group-'+ aGroup +'" class="col-lg-10">' +
-                        renderGroupSchedule(aGroup, {title: 'Fase ' + aGroup}) +
-                    '</div>' +
+                    '<div id="group-'+ aGroup +'" class="col-lg-10"></div>' +
                 '</div>' +
 
                 '<div class="row">' +
@@ -137,28 +131,27 @@ var HORARIO = new function() {
                 '</div>'+
 
                 '<div class="row schedule-caption-row">' +
-                    '<div id="caption-'+ aGroup +'" class="col-lg-10">' +
-                        renderGroupCaption(aGroup) +
-                    '</div>' +
+                    '<div id="caption-'+ aGroup +'" class="col-lg-10"></div>' +
                 '</div>'
             );
+
+            renderGroupSchedule(aGroup, {title: 'Fase ' + aGroup});
+            renderGroupCaption(aGroup);
         }
     }
 
     var renderGroupCaption = function(theGroupId) {
-        var aName,
-            aId,
-            aCourse,
+        var aId,
+            i,
             aRet = [],
-            aData = mData.professors[theGroupId];
+            aTotal,
+            aCourses = findExistingCourses(theGroupId);
 
-        for(aName in aData) {
-            for(aCourse in aData[aName].courses) {
-                aRet.push('<li>' + aCourse + ' (' + aName + ') </li>');
-            }
+        for(i = 0, aTotal = aCourses.length; i < aTotal; i++) {
+            aRet.push('<li>' + aCourses[i].name + ' (' + aCourses[i].professor + ') </li>');
         }
 
-        return aRet.join('');
+        $('#caption-' + theGroupId).html(aRet.join(''));
     }
 
     var renderGroupSchedule = function(theGroupId, theLabels) {
@@ -201,7 +194,7 @@ var HORARIO = new function() {
                 aContent +
             '</table>';
 
-        return aTable;
+        $('#group-'+ theGroupId +'').html(aTable);
     };
 
     var getCourseInfoByCell = function(theCell) {
@@ -293,7 +286,7 @@ var HORARIO = new function() {
         aCourses = findExistingCourses();
 
         for(i = 0, aTotal = aCourses.length; i < aTotal; i++) {
-            aRet += '<option value="' + aCourses[i].professor + '###' + aCourses[i].name + '">' + aCourses[i].name + '(' + aCourses[i].professor + ')</option>';
+            aRet += '<option value="' + aCourses[i].professor + '###' + aCourses[i].name + '">' + aCourses[i].name + ' (' + aCourses[i].professor + ')</option>';
         }
 
         return '<option value="###">Selecione...</option><option value=""></option>' + aRet;
@@ -401,6 +394,9 @@ var HORARIO = new function() {
             aCell.data('course', aForm.elements.course.value);
             updateCellContent(aCell);
 
+            // Update group caption
+            renderGroupCaption(aGroup);
+
             // Hide the editing UI, if needed
             if(!aUseSelect) {
                 aContainer.slideUp();
@@ -423,6 +419,9 @@ var HORARIO = new function() {
             // Update and refresh the selected cell with empty course info
             aCell.data('course', '');
             updateCellContent(aCell);
+
+            // Update group caption
+            renderGroupCaption(aCell.data('group'));
 
             // Restore clickable behavior
             enhanceAllElements();
