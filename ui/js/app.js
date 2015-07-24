@@ -186,7 +186,7 @@ var HORARIO = new function() {
 
         aTable +=
             '<h3>' + (theLabels.title || 'No title') + '</h3>' +
-            '<table class="table table-bordered">' +
+            '<table class="table table-bordered schedule-table">' +
                 '<tr class="success">' +
                     '<th>Horário</th>' +
                     '<th>Segunda-feira</th>' +
@@ -309,7 +309,7 @@ var HORARIO = new function() {
               '<div class="form-group">' +
                 '<input type="hidden" name="course" />' +
                 '<input type="hidden" name="professor" />' +
-                '<select name="professorSelection" id="professorSelection' + theGroupId + '">' +
+                '<select name="professorSelection" id="professorSelection' + theGroupId + '" class="form-control">' +
                     generateProfessorsOptionList() +
                 '</select>' +
               '</div>' +

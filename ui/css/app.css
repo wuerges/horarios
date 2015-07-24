@@ -7,6 +7,7 @@
 
 .schedule-row table td.clickable {
     cursor: pointer;
+    position: relative;
 }
 
 .schedule-row table td.clickable:hover {
@@ -41,8 +42,15 @@
 
 .cell-buttons {
     display: none;
+    position: absolute;
+    right: 5px;
+    top: 8px;
 }
 
 .cell-buttons i {
     margin-left: 5px;
+}
+
+.schedule-table tr {
+    max-width: 16.66%;
 }
