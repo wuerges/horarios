@@ -283,22 +283,24 @@ var HORARIO = new function() {
         return aFormId;
     }
 
-    var generateProfessorsOptionList = function() {
+    var generateProfessorsOptionList = function(theSelectedCourseName) {
         var aRet = '',
             aCourses,
             i,
-            aTotal;
+            aTotal,
+            aSelected;
 
         aCourses = findExistingCourses();
 
         for(i = 0, aTotal = aCourses.length; i < aTotal; i++) {
-            aRet += '<option value="' + aCourses[i].professor + '###' + aCourses[i].name + '">' + aCourses[i].name + ' (' + aCourses[i].professor + ')</option>';
+            aSelected = theSelectedCourseName == aCourses[i].name ? 'selected="selected"' : '';
+            aRet += '<option value="' + aCourses[i].professor + '###' + aCourses[i].name + '" ' + aSelected + '>' + aCourses[i].name + ' (' + aCourses[i].professor + ')</option>';
         }
 
         return '<option value="###">Selecione...</option><option value=""></option>' + aRet;
     }
 
-    var insertSelectProfessorFormInto = function(theContainer, theGroupId) {
+    var insertSelectProfessorFormInto = function(theContainer, theGroupId, theSelectedCourseName) {
         var aContent,
             aForm,
             aValues,
@@ -310,7 +312,7 @@ var HORARIO = new function() {
                 '<input type="hidden" name="course" />' +
                 '<input type="hidden" name="professor" />' +
                 '<select name="professorSelection" id="professorSelection' + theGroupId + '" class="form-control">' +
-                    generateProfessorsOptionList() +
+                    generateProfessorsOptionList(theSelectedCourseName) +
                 '</select>' +
               '</div>' +
             '</form>';
@@ -370,14 +372,14 @@ var HORARIO = new function() {
         // For the sake of usability, siable all clickable behavior
         // for this cell. It will be enabled back when the user is
         // done editing the cell content.
-        aCell.off();
+        aCell.off().removeClass('selected');
 
         // Check what type of professor addition it is. It can be a "dropdown" selecting
         // one where the user chooses the professor name from a list. Or it can be the
         // addition of a brand new professor, made in a separate UI.
         if(aUseSelect) {
             // Select from dropdown.
-            aFormId = insertSelectProfessorFormInto(aCell, aGroup);
+            aFormId = insertSelectProfessorFormInto(aCell, aGroup, aCell.data('course'));
 
         } else {
             // Use the separate UI to allow the user to input the new professor info.
