@@ -23,9 +23,7 @@
 
 var HORARIO = new function() {
     var mData = {
-        professors: {},
         groups:     {},
-        courses:    {},
         failures:   {}
     };
     var mSelf = this;
@@ -127,7 +125,13 @@ var HORARIO = new function() {
                 '</div>' +
 
                 '<div class="row">' +
-                    '<div class="row-ui-professor-manager row-ui-professor-manager-' + aGroup +' col-lg-10"></div>' +
+                    '<div class="row-ui-professor-manager row-ui-professor-manager-' + aGroup +' col-lg-10">' +
+                        '<div class="panel panel-default info">' +
+                          '<i class="fa fa-user-plus fa-3x"></i>' +
+                          '<div class="panel-body">' +
+                          '</div>' +
+                        '</div>' +
+                    '</div>' +
                 '</div>'+
 
                 '<div class="row schedule-caption-row">' +
@@ -183,7 +187,7 @@ var HORARIO = new function() {
         aTable +=
             '<h3>' + (theLabels.title || 'No title') + '</h3>' +
             '<table class="table table-bordered">' +
-                '<tr>' +
+                '<tr class="success">' +
                     '<th>Horário</th>' +
                     '<th>Segunda-feira</th>' +
                     '<th>Terça-feira</th>' +
@@ -264,15 +268,17 @@ var HORARIO = new function() {
         aForm = '' +
             '<form class="form-inline" id="' + aFormId + '">' +
               '<div class="form-group">' +
-                '<input type="text" class="form-control" name="course" placeholder="Componente currucular">' +
+                '<label for="formProfessorCourse">Componente curricular</label> ' +
+                '<input type="text" class="form-control" name="course" id="formProfessorCourse" placeholder="Ex. Algoritmos">' +
               '</div>' +
               '<div class="form-group">' +
-                '<input type="text" class="form-control" name="professor" placeholder="Professor">' +
+                '<label for="formProfessorProfessor">Professor</label> ' +
+                '<input type="text" class="form-control" name="professor" id="formProfessorProfessor" placeholder="Ex. Fernando">' +
               '</div>' +
-              '<button type="submit" class="btn btn-default"><i class="fa fa-plus"></i> Adicionar</button>' +
+              ' <button type="submit" class="btn btn-primary">Adicionar</button>' +
             '</form>';
 
-        theContainer.hide().html(aForm).slideDown();
+        theContainer.html(aForm);
 
         return aFormId;
     }
@@ -375,7 +381,8 @@ var HORARIO = new function() {
 
         } else {
             // Use the separate UI to allow the user to input the new professor info.
-            aFormId = insertNewProfessorFormInto(aContainer, aGroup);
+            aFormId = insertNewProfessorFormInto(aContainer.find('.panel-body'), aGroup);
+            aContainer.hide().slideDown();
         }
 
         // Handle the submition of the UI form fired when

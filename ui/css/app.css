@@ -27,8 +27,16 @@
 
 .row-ui-professor-manager {
     display: none;
-    background: #9c9c9c;
     text-align: center;
+}
+
+.row-ui-professor-manager label {
+    margin-left: 10px;
+}
+
+.row-ui-professor-manager div.panel i {
+    float: left;
+    margin: 10px 0 0 40px;
 }
 
 .cell-buttons {
