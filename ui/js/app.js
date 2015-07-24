@@ -413,6 +413,22 @@ var HORARIO = new function() {
         });
     };
 
+    var handleRemoveProfessorClick = function() {
+        var aCell = $(this).parent().parent(); // TODO: remove all those parent() stuff
+
+        if(confirm('Remover mesmo?')) {
+            // Update the internal schedule database
+            updateDataEntry(aCell.data('group'), aCell.data('time'), aCell.data('day'), '', '');
+
+            // Update and refresh the selected cell with empty course info
+            aCell.data('course', '');
+            updateCellContent(aCell);
+
+            // Restore clickable behavior
+            enhanceAllElements();
+        }
+    };
+
     var renderCellContent = function(theInfo) {
         var aRet = '';
 
@@ -445,6 +461,11 @@ var HORARIO = new function() {
         $('#main a.add-professor, #main a.select-professor').each(function(theIndex, theElement) {
             $(theElement).off();
             $(theElement).click(handleNewProfessorClick);
+        });
+
+        $('#main a.remove-professor').each(function(theIndex, theElement) {
+            $(theElement).off();
+            $(theElement).click(handleRemoveProfessorClick);
         });
     };
 
