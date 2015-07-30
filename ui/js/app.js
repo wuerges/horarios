@@ -261,7 +261,7 @@ var HORARIO = new function() {
                 aInfo       = aDays[aWeekDay];
                 aCourseName = aInfo ? aInfo.course.name : '';
 
-                aContent += '<td class="clickable" data-course="' + aCourseName + '" data-group="' + theGroupId + '" data-day="' + aWeekDay + '" + data-time="' + aTime + '">' + renderCellContent(aCourseName) + '</td>';
+                aContent += '<td class="clickable" data-course="' + aCourseName + '" data-group="' + theGroupId + '" data-day="' + aWeekDay + '" + data-time="' + aTime + '">' + renderCellContent(aInfo) + '</td>';
             }
             aContent += '</tr>';
         }
@@ -302,6 +302,9 @@ var HORARIO = new function() {
         aCourse         = aInfoA.course;
         aInfoA.course   = aInfoB.course;
         aInfoB.course   = aCourse;
+
+        aInfoA.locked   = false;
+        aInfoB.locked   = false;
 
         theCellA.data('course', aInfoA.course.name);
         theCellB.data('course', aInfoB.course.name);
@@ -442,6 +445,20 @@ var HORARIO = new function() {
         console.debug('Data has changed.', mData);
     };
 
+    var handleLockerClick = function() {
+        var aElement    = $(this),
+            aCell       = aElement.parent().parent(), // TODO: remove all those parent() stuff
+            aCourseInfo;
+
+        aCourseInfo = getCourseInfoByCell(aCell);
+
+        if(aCourseInfo) {
+            aCourseInfo.locked = aCourseInfo.locked === false || aCourseInfo.locked == "false" ? true : false;
+        }
+
+        updateCellContent(aCell);
+    };
+
     var handleNewProfessorClick = function() {
         var aElement    = $(this),
             aUseSelect  = aElement.hasClass('select-professor'),
@@ -519,24 +536,38 @@ var HORARIO = new function() {
         }
     };
 
-    var renderCellContent = function(theInfo) {
-        var aRet = '';
+    var renderCellContent = function(theCourseData) {
+        var aRet = '',
+            aIsLocked = false,
+            aCourseName;
 
-        aRet += '<a href="javascript:void(0)" class="select-professor"><i class="fa fa-toggle-down"></i></a>';
+        aRet += '<a href="javascript:void(0)" class="select-professor" title="Selecionar professor da lista de cadastrado"><i class="fa fa-toggle-down"></i></a>';
 
-        if(theInfo && theInfo != '') {
-            aRet += '<a href="javascript:void(0)" class="remove-professor"><i class="fa fa-trash"></i></a>';
+        if(theCourseData && theCourseData.course) {
+            aCourseName = theCourseData.course.name || '';
+            aRet += '<a href="javascript:void(0)" class="remove-professor" title="Remover professor"><i class="fa fa-trash"></i></a>';
 
+            if(theCourseData.locked == "true" || theCourseData.locked === true) {
+                aIsLocked = true;
+                aRet += '<a href="javascript:void(0)" class="remove-lock" title="Remover trancamento dessa posição (faz esse professor ficar móvel durante a alocação automática)."><i class="fa fa-unlock"></i></a>';
+
+            } else {
+                aRet += '<a href="javascript:void(0)" class="add-lock" title="Trancar professor nessa posição (esse professor não sofrerá movimentações durante a alocação automática)."><i class="fa fa-lock"></i></a>';
+            }
         } else {
-            aRet += '<a href="javascript:void(0)" class="add-professor"><i class="fa fa-plus-circle"></i></a>';
+            aRet += '<a href="javascript:void(0)" class="add-professor" title="Adicionar um novo professor"><i class="fa fa-plus-circle"></i></a>';
         }
 
-        return theInfo + '<span class="cell-buttons pull-right">' + aRet + '</span>';
+        if(aIsLocked) {
+            aCourseName = '<span class="locked-name">' + aCourseName + '</span>';
+        }
+
+        return aCourseName + '<span class="cell-buttons pull-right">' + aRet + '</span>' + (aIsLocked ? '<i class="fa fa-lock badge-locked" title="Esse professor ficará fixado a essa posição durante a alocação automática."></i>' : '');
     };
 
     var updateCellContent = function(theObject) {
         theObject.fadeOut('fast', function() {
-            $(this).html(renderCellContent(theObject.data('course'))).fadeIn('fast');
+            $(this).html(renderCellContent(getCourseInfoByCell(theObject))).fadeIn('fast');
             enhanceAllElements();
         });
     };
@@ -551,6 +582,11 @@ var HORARIO = new function() {
         $('#main a.add-professor, #main a.select-professor').each(function(theIndex, theElement) {
             $(theElement).off();
             $(theElement).click(handleNewProfessorClick);
+        });
+
+        $('#main a.add-lock, #main a.remove-lock').each(function(theIndex, theElement) {
+            $(theElement).off();
+            $(theElement).click(handleLockerClick);
         });
 
         $('#main a.remove-professor').each(function(theIndex, theElement) {

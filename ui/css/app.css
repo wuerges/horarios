@@ -54,7 +54,7 @@
 .cell-buttons {
     display: none;
     position: absolute;
-    right: 5px;
+    right: 10px;
     top: 8px;
 }
 
@@ -88,4 +88,16 @@
 
 .magic-loading-panel i {
     margin-right: 10px;
+}
+
+.badge-locked {
+    float: left;
+    margin-right: 4px;
+    margin-top: 3px;
+    color: red;
+    font-size: 1.2em;
+}
+
+.locked-name {
+    color: red;
 }
