@@ -106,28 +106,26 @@ var HORARIO = new function() {
             }
 
         }).fail(function(theJqXHR, theTextStatus, theErrorThrown) {
-            console.error('Fail to save data!');
+            console.error('Fail to save data!', theErrorThrown);
         });
     };
 
-    var loadData = function(theCallback, theMode) {
+    var loadData = function(theCallback) {
         $.ajax({
             url: 'api.php',
             dataType: 'json',
-            data: {action: 'load', mode: (theMode || 'raw')}
+            data: {action: 'load'}
 
         }).done(function(theData) {
-            console.debug('Raw data loaded', theData);
+            console.debug('Baked data loaded', theData);
 
-            if(theData.success) {
-                parseData(theData.data);
-
-                if(theCallback) {
-                    theCallback();
+            if(theData.success && theCallback) {
+                if(theData.data) {
+                    mData = theData.data;
                 }
-            } else {
-
+                theCallback();
             }
+
         }).fail(function(theJqXHR, theTextStatus, theErrorThrown) {
             console.error('Fail to load data!');
         });
@@ -590,7 +588,7 @@ var HORARIO = new function() {
         $.ajax({
             url: 'api.php',
             dataType: 'json',
-            data: {action: 'magic'}
+            data: {action: 'magic', config: 'config'}
 
         }).done(function(theData) {
             console.debug('Magic data loaded', theData);

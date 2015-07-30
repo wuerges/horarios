@@ -21,7 +21,6 @@
 		// Insert some dummy data
 		// TODO: use better dummy data.
 		$aDummyData = file_get_contents(DATABASE_DUMMY_DATA_FILE);
-		$aDb->exec("INSERT INTO schedules (id, data) VALUES (1, '".$aDummyData."')");
 	}
 
 	// Get DB ready to use.
@@ -33,8 +32,11 @@
 			$aData = isset($_REQUEST['data']) ? $_REQUEST['data'] : null;
 
 			if($aData != null) {
-				$aRet['success'] = true;
-				// TODO: save data here
+				 $aPrep = $aDb->prepare('INSERT INTO schedules (id, data) VALUES (null, :data)');
+				 $aPrep->bindValue(':data', json_encode($aData), SQLITE3_TEXT);
+
+				 $aStatus = $aPrep->execute();
+				 $aRet['success'] = $aStatus !== false;
 
 			} else {
 				$aRet['success'] = false;
@@ -44,24 +46,30 @@
 
 		// Automagically create the schedule using Emilio's dark magic tool.
 		case 'magic':
-			// TODO: replace it with a system() call
-			$aOutput = file_get_contents(DATABASE_DUMMY_DATA_FILE);
+			$aRet['success'] = false;
+			$aConfig = isset($_REQUEST['config']) ? $_REQUEST['config'] : null;
 
-			if($aOutput != null) {
-				$aRet['success'] = true;
-				$aRet['data'] = json_decode($aOutput);
+			if($aConfig != null && !empty($aConfig)) {
+				// TODO: replace it with a system() call
+				$aOutput = file_get_contents(DATABASE_DUMMY_DATA_FILE);
 
+				if($aOutput != null) {
+					$aRet['success'] = true;
+					$aRet['data'] = json_decode($aOutput);
+
+				} else {
+					// Something wrong just happened with the scheduler.
+					$aRet['message'] = 'Something wrong with the scheduler';
+				}
 			} else {
-				// Something wrong just happened with the scheduler.
-				$aRet['success'] = false;
-				$aRet['message'] = 'Something wrong with the scheduler';
+				$aRet['message'] = 'Scheduler invalid config string.';
 			}
 			break;
 
 		// Load any previously saved schedule.
 		case 'load':
 			$aRet['success'] = true;
-			$aRet['data'] = array();
+			$aRet['data'] = null;
 
 			$aMode = isset($_REQUEST['mode']) ? $_REQUEST['mode'] : 'raw';
 
