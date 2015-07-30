@@ -37,15 +37,25 @@
 				// TODO: save data here
 
 			} else {
-				$aRet['failure'] = true;
+				$aRet['success'] = false;
 				$aRet['message'] = 'Nothing to be saved.';
 			}
 			break;
 
 		// Automagically create the schedule using Emilio's dark magic tool.
 		case 'magic':
-			$aRet['success'] = true;
-			$aRet['data'] = array();
+			// TODO: replace it with a system() call
+			$aOutput = file_get_contents(DATABASE_DUMMY_DATA_FILE);
+
+			if($aOutput != null) {
+				$aRet['success'] = true;
+				$aRet['data'] = json_decode($aOutput);
+
+			} else {
+				// Something wrong just happened with the scheduler.
+				$aRet['success'] = false;
+				$aRet['message'] = 'Something wrong with the scheduler';
+			}
 			break;
 
 		// Load any previously saved schedule.
@@ -60,12 +70,11 @@
 			while ($aRow = $aResults->fetchArray()) {
 				$aRet['data'] = json_decode($aRow['data']);
 			}
-
 			break;
 
 		default:
 			// Automagically create the schedule using Emilio's dark magic tool.
-			$aRet['failure'] = true;
+			$aRet['success'] = false;
 			$aRet['message'] = 'Unknown action method: ' . $aAction;
 			break;
 	}

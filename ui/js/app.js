@@ -163,11 +163,14 @@ var HORARIO = new function() {
     }
 
     var renderEverything = function(theContainerId) {
+        $('#' + theContainerId).html('');
+
         if(mData.failures.length > 0) {
             renderFailures(theContainerId);
         }
 
         renderSchedule(theContainerId);
+        enhanceAllElements();
     };
 
     var renderFailures = function(theContainerId) {
@@ -578,11 +581,31 @@ var HORARIO = new function() {
     };
 
     var handleNavbarPrint = function() {
-        console.log('p');
+        // TODO: implement the prinf feature.
     };
 
     var handleNavbarMagic = function() {
-        console.log('magic');
+        $('#main').html('<div class="alert alert-warning magic-loading-panel" role="alert"><strong><i class="fa fa-rocket fa-spin fa-2x"></i> Trabalhando!</strong> Um novo horário está sendo gerado, por favor, aguarde. Isso pode levar vários minutos.</div>').fadeIn();
+
+        $.ajax({
+            url: 'api.php',
+            dataType: 'json',
+            data: {action: 'magic'}
+
+        }).done(function(theData) {
+            console.debug('Magic data loaded', theData);
+
+            if(theData.success) {
+                parseData(theData.data);
+                renderEverything('main');
+
+            } else {
+                console.error(theData);
+            }
+        }).fail(function(theJqXHR, theTextStatus, theErrorThrown) {
+            console.error('Fail to load magic data!');
+        });
+
     };
 
     var buildNavbar = function() {
@@ -594,13 +617,10 @@ var HORARIO = new function() {
     this.init = function() {
         buildNavbar();
 
-        $('#main').html('<div class="alert alert-success" role="alert"><i class="fa fa-circle-o-notch fa-spin"></i> <strong>Carregando...</strong> Por favor, aguarde.</div>').fadeIn();
+        $('#main').html('<div class="alert alert-warning loading-panel" role="alert"><i class="fa fa-circle-o-notch fa-spin"></i> <strong>Carregando dados</strong>. Por favor, aguarde.</div>').fadeIn();
 
         loadData(function() {
-            $('#main').html('');
-
             renderEverything('main');
-            enhanceAllElements();
         });
     }
 };

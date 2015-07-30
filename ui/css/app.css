@@ -81,3 +81,11 @@
     margin-right: 5px;
     display: none;
 }
+
+.magic-loading-panel {
+    padding: 10px 10px 15px 10px;
+}
+
+.magic-loading-panel i {
+    margin-right: 10px;
+}
