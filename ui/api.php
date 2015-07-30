@@ -28,8 +28,8 @@
 	$aDb = new SQLite3(DATABASE_FILE);
 
 	switch($aAction) {
+		// Save the current schedule
 		case 'save':
-			// Save the current schedule
 			$aData = isset($_REQUEST['data']) ? $_REQUEST['data'] : null;
 
 			if($aData != null) {
@@ -42,16 +42,18 @@
 			}
 			break;
 
+		// Automagically create the schedule using Emilio's dark magic tool.
 		case 'magic':
-			// Automagically create the schedule using Emilio's dark magic tool.
 			$aRet['success'] = true;
 			$aRet['data'] = array();
 			break;
 
+		// Load any previously saved schedule.
 		case 'load':
-			// Load any previously saved schedule.
 			$aRet['success'] = true;
 			$aRet['data'] = array();
+
+			$aMode = isset($_REQUEST['mode']) ? $_REQUEST['mode'] : 'raw';
 
 			$aResults = $aDb->query('SELECT id, data FROM schedules WHERE 1');
 

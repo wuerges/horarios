@@ -110,11 +110,11 @@ var HORARIO = new function() {
         });
     };
 
-    var loadData = function(theCallback) {
+    var loadData = function(theCallback, theMode) {
         $.ajax({
             url: 'api.php',
             dataType: 'json',
-            data: {action: 'load'}
+            data: {action: 'load', mode: (theMode || 'raw')}
 
         }).done(function(theData) {
             console.debug('Raw data loaded', theData);
