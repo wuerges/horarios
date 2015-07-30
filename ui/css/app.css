@@ -75,3 +75,9 @@
     padding-left: 2px;
     padding-top: 5px;
 }
+
+#save-caption {
+    color: #afafaf;
+    margin-right: 5px;
+    display: none;
+}

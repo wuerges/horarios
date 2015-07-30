@@ -86,6 +86,25 @@ var HORARIO = new function() {
         console.debug(mData);
     }
 
+    var saveData = function(theCallback) {
+        $.ajax({
+            url: 'api.php',
+            dataType: 'json',
+            method: 'post',
+            data: {action: 'save', data: mData}
+
+        }).done(function(theInfo) {
+            console.debug('Data saved', theInfo);
+
+            if(theCallback) {
+                theCallback(theInfo);
+            }
+
+        }).fail(function(theJqXHR, theTextStatus, theErrorThrown) {
+            console.error('Fail to save data!');
+        });
+    };
+
     var loadData = function(theCallback) {
         $.ajax({
             url: '../inputs/teste3_json.out', // TODO: use correct backend URL here
@@ -527,7 +546,42 @@ var HORARIO = new function() {
         });
     };
 
+    var handleNavbarSave = function() {
+        var aButton = $('#navbar a.save');
+
+        // Show some nice UI loading anim
+        aButton.html('<i class="fa fa-circle-o-notch fa-spin"></i>');
+
+        // Send data to server
+        saveData(function(theInfo) {
+            if(theInfo.success) {
+                aButton.html('<span id="save-caption">Ok, salvo!</span> ');
+            } else {
+                aButton.html('<span id="save-caption">Oops, algo deu errado!</span> ');
+            }
+            aButton.append('<i class="fa fa-save"></i>');
+
+            $('#save-caption').fadeIn().delay(2000).fadeOut();
+        });
+    };
+
+    var handleNavbarPrint = function() {
+        console.log('p');
+    };
+
+    var handleNavbarMagic = function() {
+        console.log('magic');
+    };
+
+    var buildNavbar = function() {
+        $('#navbar a.save').click(handleNavbarSave);
+        $('#navbar a.print').click(handleNavbarPrint);
+        $('#navbar a.magic').click(handleNavbarMagic);
+    };
+
     this.init = function() {
+        buildNavbar();
+
         loadData(function() {
             renderEverything('main');
             enhanceAllElements();
