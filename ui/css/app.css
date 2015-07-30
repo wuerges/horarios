@@ -1,5 +1,12 @@
+#main {
+    margin-top: 80px;
+}
+
+.navbar-brand {
+    padding-left: 20px;
+}
+
 .schedule-row {
-    margin-top: 30px;
 }
 
 .schedule-row table td {
@@ -18,6 +25,10 @@
 .schedule-row table td.selected {
     border: dashed #ff0000 2px;
     background: #C2C4FF;
+}
+
+.schedule-caption-row {
+    margin-bottom: 30px;
 }
 
 .schedule-caption-row li {

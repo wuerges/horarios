@@ -150,7 +150,7 @@ var HORARIO = new function() {
 
         $('#' + theContainerId).append(
             '<div class="row row-failures">' +
-                '<div id="failures" class="col-lg-10">' +
+                '<div id="failures" class="col-lg-12">' +
                     '<div class="panel panel-danger">' +
                         '<div class="panel-heading"><i class="fa fa-warning"></i> Falhas de alocação automática</div>' +
                         '<div class="panel-body">' +
@@ -171,11 +171,11 @@ var HORARIO = new function() {
         for(aGroup in mData.groups) {
             $('#' + theContainerId).append(
                 '<div class="row schedule-row">' +
-                    '<div id="group-'+ aGroup +'" class="col-lg-10"></div>' +
+                    '<div id="group-'+ aGroup +'" class="col-lg-12"></div>' +
                 '</div>' +
 
                 '<div class="row">' +
-                    '<div class="row-ui-professor-manager row-ui-professor-manager-' + aGroup +' col-lg-10">' +
+                    '<div class="row-ui-professor-manager row-ui-professor-manager-' + aGroup +' col-lg-12">' +
                         '<div class="panel panel-default info">' +
                           '<i class="fa fa-user-plus fa-3x"></i>' +
                           '<div class="panel-body">' +
@@ -185,7 +185,7 @@ var HORARIO = new function() {
                 '</div>'+
 
                 '<div class="row schedule-caption-row">' +
-                    '<div id="caption-'+ aGroup +'" class="col-lg-10"></div>' +
+                    '<div id="caption-'+ aGroup +'" class="col-lg-12"></div>' +
                 '</div>'
             );
 
