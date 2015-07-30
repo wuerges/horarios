@@ -54,3 +54,13 @@
 .schedule-table tr {
     max-width: 16.66%;
 }
+
+.row-failures div.panel-body ul {
+     margin-top: 10px;
+}
+
+.row-failures div.panel-body li {
+    color: #850000;
+    padding-left: 2px;
+    padding-top: 5px;
+}

@@ -34,7 +34,23 @@ var HORARIO = new function() {
     }
 
     var parseFailureData = function(theData) {
-        mData.failures = theData[0] == 'Failure' ? theData[1] : []
+        var i,
+            aTotal,
+            aFailures;
+
+        mData.failures = [];
+
+        // Do we have failures to deal with?
+        if(theData[0] == 'Failure') {
+            // Yep! :(
+            aFailures = theData[1];
+            for(i = 0, aTotal = aFailures.length; i < aTotal; i++) {
+                mData.failures.push({
+                    name: aFailures[i]._nome,
+                    professor: aFailures[i]._prof
+                });
+            }
+        }
     };
 
     var parseScheduleData = function(theData) {
@@ -114,6 +130,40 @@ var HORARIO = new function() {
 
         return aRet;
     }
+
+    var renderEverything = function(theContainerId) {
+        if(mData.failures.length > 0) {
+            renderFailures(theContainerId);
+        }
+
+        renderSchedule(theContainerId);
+    };
+
+    var renderFailures = function(theContainerId) {
+        var aText = '',
+            aTotal,
+            i;
+
+        for(i = 0, aTotal = mData.failures.length; i < aTotal; i++) {
+            aText += '<li>' + mData.failures[i].name + ' (' + mData.failures[i].professor + ')</li>';
+        }
+
+        $('#' + theContainerId).append(
+            '<div class="row row-failures">' +
+                '<div id="failures" class="col-lg-10">' +
+                    '<div class="panel panel-danger">' +
+                        '<div class="panel-heading"><i class="fa fa-warning"></i> Falhas de alocação automática</div>' +
+                        '<div class="panel-body">' +
+                            'Não foi possível alocar automaticamente na grade de horários os componentes curriculares listados abaixo. Você precisa inseri-los no horário de forma manual.' +
+                            '<ul>' +
+                                aText +
+                            '</ul>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>'
+        );
+    };
 
     var renderSchedule = function(theContainerId) {
         var aGroup;
@@ -479,7 +529,7 @@ var HORARIO = new function() {
 
     this.init = function() {
         loadData(function() {
-            renderSchedule('main');
+            renderEverything('main');
             enhanceAllElements();
         });
     }
