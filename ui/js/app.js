@@ -311,6 +311,8 @@ var HORARIO = new function() {
 
         updateCellContent(theCellB);
         updateCellContent(theCellA);
+
+        hightlighSavingIsRequired();
     };
 
     var handleCellClick = function() {
@@ -419,6 +421,10 @@ var HORARIO = new function() {
         return aFormId;
     }
 
+    var hightlighSavingIsRequired = function() {
+        $('.navbar-nav a.save').fadeOut().addClass('save-dirty').fadeIn();
+    };
+
     var updateDataEntry = function(theGroup, theTime, theDay, theCourse, theProfessor) {
         var aInfo;
 
@@ -443,6 +449,8 @@ var HORARIO = new function() {
         aInfo.course.professor  = theProfessor;
 
         console.debug('Data has changed.', mData);
+
+        hightlighSavingIsRequired();
     };
 
     var handleLockerClick = function() {
@@ -457,6 +465,7 @@ var HORARIO = new function() {
         }
 
         updateCellContent(aCell);
+        hightlighSavingIsRequired();
     };
 
     var handleNewProfessorClick = function() {
@@ -539,7 +548,7 @@ var HORARIO = new function() {
     var renderCellContent = function(theCourseData) {
         var aRet = '',
             aIsLocked = false,
-            aCourseName;
+            aCourseName = '';
 
         aRet += '<a href="javascript:void(0)" class="select-professor" title="Selecionar professor da lista de cadastrado"><i class="fa fa-toggle-down"></i></a>';
 

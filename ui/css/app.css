@@ -101,3 +101,7 @@
 .locked-name {
     color: red;
 }
+
+.save-dirty {
+    color: red !important;
+}
