@@ -28,7 +28,8 @@
 		case 'load':
 			// Load any previously saved schedule.
 			$aRet['success'] = true;
-			$aRet['data'] = array();
+			$aRet['data'] = json_decode(file_get_contents(dirname(__FILE__) . '/../inputs/teste3_json.out')); // TODO: load data correctly
+
 			break;
 
 		default:

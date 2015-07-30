@@ -107,17 +107,24 @@ var HORARIO = new function() {
 
     var loadData = function(theCallback) {
         $.ajax({
-            url: '../inputs/teste3_json.out', // TODO: use correct backend URL here
-            dataType: 'json'
+            url: 'api.php',
+            dataType: 'json',
+            data: {action: 'load'}
+
         }).done(function(theData) {
-            parseData(theData);
+            console.debug('Raw data loaded', theData);
 
-            if(theCallback) {
-                theCallback();
+            if(theData.success) {
+                parseData(theData.data);
+
+                if(theCallback) {
+                    theCallback();
+                }
+            } else {
+
             }
-
         }).fail(function(theJqXHR, theTextStatus, theErrorThrown) {
-            console.error('Fail!');
+            console.error('Fail to load data!');
         });
     };
 
@@ -582,7 +589,11 @@ var HORARIO = new function() {
     this.init = function() {
         buildNavbar();
 
+        $('#main').html('<div class="alert alert-success" role="alert"><i class="fa fa-circle-o-notch fa-spin"></i> <strong>Carregando...</strong> Por favor, aguarde.</div>').fadeIn();
+
         loadData(function() {
+            $('#main').html('');
+
             renderEverything('main');
             enhanceAllElements();
         });
