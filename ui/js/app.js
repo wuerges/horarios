@@ -29,6 +29,11 @@ var HORARIO = new function() {
     var mSelf = this;
 
     var parseData = function(theData) {
+        if(theData.length == 0) {
+            // No data to be parsed.
+            return;
+        }
+
         parseFailureData(theData);
         parseScheduleData(theData);
     }
