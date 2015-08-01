@@ -466,6 +466,9 @@ var HORARIO = new function() {
 
         updateCellContent(aCell);
         hightlighSavingIsRequired();
+
+        // Stop event bubbling in the cell.
+        return false;
     };
 
     var handleNewProfessorClick = function() {
@@ -477,7 +480,7 @@ var HORARIO = new function() {
             aForm,
             aFormId;
 
-        // For the sake of usability, siable all clickable behavior
+        // For the sake of usability, disable all clickable behavior
         // for this cell. It will be enabled back when the user is
         // done editing the cell content.
         aCell.off().removeClass('selected');
@@ -519,11 +522,11 @@ var HORARIO = new function() {
                 aContainer.slideUp();
             }
 
-            // Restore cell clickable behavior
-            enhanceAllElements();
-
             return false;
         });
+
+        // Stop event bubbling in the cell.
+        return false;
     };
 
     var handleRemoveProfessorClick = function() {
@@ -543,6 +546,9 @@ var HORARIO = new function() {
             // Restore clickable behavior
             enhanceAllElements();
         }
+
+        // Stop event bubbling in the cell.
+        return false;
     };
 
     var renderCellContent = function(theCourseData) {
